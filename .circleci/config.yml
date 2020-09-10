@@ -1,0 +1,81 @@
+version: 2.1
+
+# Required environment variables
+#
+
+executors:
+  default:
+    working_directory: ~/repo
+    docker:
+      - image: cibuilds/base:latest
+  python:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/python:3.7
+
+workflows:
+  version: 2
+  Release:
+    jobs:
+      - Install Code Climate:
+          filters:
+            tags:
+              only: /v([0-9]+){1}(\.[0-9]+){2}/
+            branches:
+              ignore: /.*/
+      - Run Tests:
+          requires:
+            - Install Code Climate
+          filters:
+            tags:
+              only: /v([0-9]+){1}(\.[0-9]+){2}/
+            branches:
+              ignore: /.*/
+  Release Candidate:
+    jobs:
+      - Install Code Climate:
+          filters:
+            tags:
+              ignore: /.*/
+      - Run Tests:
+          requires:
+            - Install Code Climate
+          filters:
+            tags:
+              ignore: /.*/
+
+  Install Code Climate:
+    executor: default
+    steps:
+      - run:
+          name: Install Code Climate's test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - ./cc-test-reporter
+
+  Run Tests:
+    executor: python
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Set up python environment
+          command: |
+            make init-venv
+      - run:
+          name: Running tests
+          command: |
+            # notify Code Climate of a pending test report using `before-build`
+            ./cc-test-reporter before-build
+            make coverage
+            # upload test report to Code Climate using `after-build`
+            ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code $?
+      - store_artifacts:
+          path: test-reports
+      - store_test_results:
+          path: test-reports
