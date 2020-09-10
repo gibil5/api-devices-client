@@ -1,0 +1,9 @@
+[pylint]
+max-line-length = 120
+disable =
+    C0103, #  Invalid %s name "%s" (invalid-name)
+    C0111, #  Missing %s docstring (missing-module-docstring / missing-function-docstring / missing-class-docstring)
+    W1202, #  Use %s formatting in logging functions (logging-format-interpolation)
+    W1203, #  Use %s formatting in logging functions (logging-fstring-interpolation)
+    E0401, #  Unable to import %s (import-error)
+ignored-modules = app.migrations,boto3
