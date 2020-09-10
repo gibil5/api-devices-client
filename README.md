@@ -15,8 +15,6 @@ Add this to you python requirements:
 
     serverless-dd-forwarder==0.0.3
 
-> The instalation and setup will be explained with the datadog 11 version.
-> You should have the `datadog-lambda==2.13.0` previously defined
 
 This package is stored in Gemfury. You'll need to add the gemfury index to 
 your python requirements file. For that you can add: 
@@ -54,21 +52,51 @@ result = DevicesV2API(url=url, auth_token=token) \
     .all()
 ```
 
+&nbsp;
+## Environments
+
+| Stage      | Link                                                            |
+| ---------- | --------------------------------------------------------------- |
+| dev        | <https://qqsvee9xz7.execute-api.us-east-1.amazonaws.com/dev>        |
+| staging    | <https://devices-staging.electric.ai/staging>    |
+| production | <https://devices-prod.electric.ai/production> |
+
+
+
 
 &nbsp;
 ## Development
 
 
-### Setup 
+### Pre requisites
 
-You just have to Run:
+- Install [Make](https://www.gnu.org/software/make)
+- Obtain your [Gemfury Token](https://manage.fury.io/manage/electric/tokens/shared) (aka `FURY_AUTH`)
+
+### Set your Gemfury token as an environment variable
+
+For this step you must have already obtained your Gemfury token. Then create a new environment variable called `FURY_AUTH` and assign your Gemfury token to it so it will be available when running scripts from the terminal.
+
+For this you have two options:
+
+- Add it for your current terminal session (this must be repeated every time you want to use this variable):
+
+  - *Linux/macOS*:
+
+        export FURY_AUTH=<your_gemfury_token>
+
+- Add the variable to your environment variables and restart your terminal (this won't require you to set it again):
+
+  - *Linux/macOS*:
+
+        Add `export FURY_AUTH=<your_gemfury_token>` to your `.bashrc`/`.zshrc` file.
+
+
+### Initialize your development environment
+
+Just run:
 
     make init
-
-> After the command is run, activate your virtual environment running
->
-> `source venv/bin/activate` [linux]
-> `.\venv\Scripts\activate.bat` [windows]
 
 
 &nbsp;
