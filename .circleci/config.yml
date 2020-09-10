@@ -45,6 +45,7 @@ workflows:
             tags:
               ignore: /.*/
 
+jobs:
   Install Code Climate:
     executor: default
     steps:
