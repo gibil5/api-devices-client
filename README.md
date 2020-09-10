@@ -13,7 +13,7 @@ This client is meant to be used to query `api-devices` REST endpoints.
 
 Add this to you python requirements:
 
-    serverless-dd-forwarder==0.0.3
+    api-devices-client==0.0.1
 
 
 This package is stored in Gemfury. You'll need to add the gemfury index to 
