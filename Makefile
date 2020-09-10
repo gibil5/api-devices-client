@@ -49,7 +49,7 @@ help:
 	@echo "    coverage"
 	@echo "        Generate coverage report."
 
-init: clean init-venv
+init: clean init-venv init-precommit
 	@echo ""
 	@echo "Do not forget to activate your new virtual environment"
 
@@ -62,6 +62,13 @@ update-venv:
 		. $(VENV)/bin/activate; \
 		pip install --upgrade setuptools pip; \
 		pip install -r $(REQUIREMENTS); \
+	)
+
+init-precommit:
+	@echo "Installing pre commit..."
+	@( \
+		. $(VENV)/bin/activate; \
+		pre-commit install; \
 	)
 
 clean: clean-pyc clean-test clean-venv
