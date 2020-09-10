@@ -1,6 +1,7 @@
 # api-devices-client
 
 [![Version](https://img.shields.io/badge/version-0.0.1-blue)](https://img.shields.io/badge/version-0.0.1-blue)
+[![CircleCI](https://circleci.com/gh/ElectricAI/api-devices-client.svg?style=svg&circle-token=6b1b7d4e6fe9e1758e8c1f10f6170ddf66341176)](https://circleci.com/gh/ElectricAI/api-devices-client)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9ed5d6f56b4db526ecbb/maintainability)](https://codeclimate.com/repos/5f5a99eb03b2c5018b011671/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/9ed5d6f56b4db526ecbb/test_coverage)](https://codeclimate.com/repos/5f5a99eb03b2c5018b011671/test_coverage)
 [![Team](https://img.shields.io/badge/team-ite-orange)](https://img.shields.io/badge/team-ite-orange)
@@ -16,15 +17,15 @@ Add this to you python requirements:
     api-devices-client==0.0.1
 
 
-This package is stored in Gemfury. You'll need to add the gemfury index to 
-your python requirements file. For that you can add: 
+This package is stored in Gemfury. You'll need to add the gemfury index to
+your python requirements file. For that you can add:
 
     --extra-index-url https://repo.fury.io/${FURY_AUTH}/electric/
 
 The `FURY_AUTH` variable can be taken from [here](https://manage.fury.io/manage/electric/tokens/shared)
 
 > You may need to add the PyPI index as a fallback
-> 
+>
 > `--extra-index-url https://pypi.org/simple/`
 
 &nbsp;
@@ -120,5 +121,3 @@ Run:
 This will output a `gz` in the `/dist/` folder. Inside that folder
 you'll find a file called `api-devices-client-{VERSION}.tar.gz`. This is the artifact that
 we upload to gemfury
-
-
