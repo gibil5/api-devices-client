@@ -7,7 +7,7 @@ from marshmallow import EXCLUDE, Schema, fields, post_load
 
 class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
 
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         unknown = EXCLUDE
 
     # Ids
