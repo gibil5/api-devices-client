@@ -2,10 +2,14 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from devices.schemas import Serializable
-from marshmallow import Schema, fields, post_load
+from marshmallow import EXCLUDE, Schema, fields, post_load
 
 
 class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
+
+    class Meta:
+        unknown = EXCLUDE
+
     # Ids
     customer_id = fields.Str(required=True, allow_none=False)
     id = fields.Str(required=True, allow_none=False)
@@ -21,6 +25,7 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     source_last_check_in = fields.DateTime(required=True, allow_none=False)
     enrolled = fields.Boolean(required=True, allow_none=False)
     hostname = fields.Str(required=True, allow_none=False)
+    traceable = fields.Boolean(required=True, allow_none=False)
     # Hardware
     serial = fields.Str(required=True, allow_none=False)
     hardware_model = fields.Str(required=False, allow_none=True)
@@ -99,6 +104,7 @@ class Device(Serializable):
     source_last_check_in: datetime = None
     enrolled: bool = None
     hostname: str = None
+    traceable: bool = None
     # Hardware
     serial: str = None
     hardware_model: str = None
