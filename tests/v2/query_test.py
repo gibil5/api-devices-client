@@ -187,6 +187,7 @@ def customer_device_status(customer_id, device_id):
                     "source_last_check_in": "2020-08-26T04:00:11.143+00:00",
                     "source_last_sync": "2020-08-25T04:00:11.143+00:00",
                     "serial": "aSerial",
+                    "traceable": True,
                     "hostname": "one-device",
                     "healthy": False,
                     "created_at": "2020-07-25T04:00:11.143+00:00",
