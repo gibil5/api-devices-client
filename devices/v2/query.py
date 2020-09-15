@@ -71,7 +71,10 @@ class Devices(Query):
 
     def order_by(self, order: Order, order_by):
         if order_by and order:
-            self._query_parameters["orderby"] = f"{order.value}{order_by}"
+            # In the v2 API we've decided to change the api param to 
+            # sort by. We still have the signature method as order by
+            # until v1 is totally deprecated. 
+            self._query_parameters["sortby"] = f"{order.value}{order_by}"
         return self
 
     def all(self) -> DeviceResponse:
