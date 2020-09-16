@@ -3,6 +3,13 @@ import json
 from http import HTTPStatus
 
 
+def _get_request_body(request):
+    content_type = request.headers["Content-Type"]
+    if content_type == "application/json":
+        return json.loads(request.body)
+    return request.body
+
+
 def _transform(body, headers):
     headers = headers or {}
     if body is not None:
@@ -34,7 +41,7 @@ def _http_callback(status_code, headers=None, body=None, request_body=None, requ
 
         # Assert that the request body is the expected one
         if request_body:
-            assert request.body == request_body
+            assert _get_request_body(request) == request_body
 
         # Assert that the request params are the expected ones
         for param_name, param_expected_value in request_params.items():
@@ -47,6 +54,7 @@ def _http_callback(status_code, headers=None, body=None, request_body=None, requ
 
 http_200_callback = functools.partial(_http_callback, status_code=HTTPStatus.OK)
 http_201_callback = functools.partial(_http_callback, status_code=HTTPStatus.CREATED)
+http_204_callback = functools.partial(_http_callback, status_code=HTTPStatus.NO_CONTENT)
 http_400_callback = functools.partial(_http_callback, status_code=HTTPStatus.BAD_REQUEST)
 http_401_callback = functools.partial(_http_callback, status_code=HTTPStatus.UNAUTHORIZED)
 http_500_callback = functools.partial(_http_callback, status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
