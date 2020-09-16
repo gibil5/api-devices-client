@@ -37,15 +37,12 @@ class Query:  # pylint: disable=too-few-public-methods
         try:
             response = self._session.request(method=method, url=url, params=self._query_parameters, json=payload)
             response.raise_for_status()
-            if schema:
-                return schema.load(response.json())
+            return schema.load(response.json()) if schema else None
         except HTTPError as err:
             raise APIDevicesV2Error.wrap(err)
 
 
 class Devices(Query):
-    endpoint = DevicesV2Endpoints.devices
-    schema = DevicesResponse
 
     def __init__(self, session, url, customer_id):
         super().__init__(session, url)
@@ -82,7 +79,7 @@ class Devices(Query):
         return self
 
     def all(self) -> DevicesResponse:
-        return self.execute_request(DevicesV2Endpoints.devices, schema=self.schema)
+        return self.execute_request(DevicesV2Endpoints.devices, schema=DevicesResponse)
 
 
 class DeviceAssignment(Query):

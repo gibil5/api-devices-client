@@ -64,7 +64,7 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
         return Device(**data)
 
 
-class AssignmentSchema(Schema):
+class AssignmentSchema(Schema):  # pylint: disable=too-few-public-methods
     host_identifier = fields.Str(required=True, allow_none=False)
     assigned_to = fields.Str(required=True, allow_none=False)
     assigned_by = fields.Str(required=True, allow_none=False)
@@ -112,7 +112,7 @@ class ErrorResponseSchema(Schema):  # pylint: disable=too-few-public-methods
         return ErrorResponse(**data)
 
 
-class CreateAssignmentPayloadSchema(Schema):
+class CreateAssignmentPayloadSchema(Schema):  # pylint: disable=too-few-public-methods
     assigned_to = fields.Str(required=True, allow_none=False)
     assigned_by = fields.Str(required=True, allow_none=False)
 
