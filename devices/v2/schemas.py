@@ -64,7 +64,18 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
         return Device(**data)
 
 
-class DeviceResponseSchema(Schema):  # pylint: disable=too-few-public-methods
+class AssignmentSchema(Schema):  # pylint: disable=too-few-public-methods
+    host_identifier = fields.Str(required=True, allow_none=False)
+    assigned_to = fields.Str(required=True, allow_none=False)
+    assigned_by = fields.Str(required=True, allow_none=False)
+    assigned_at = fields.DateTime(required=True, allow_none=False)
+
+    @post_load
+    def create_assignment(self, data, **_):  # pylint: disable=no-self-use
+        return Assignment(**data)
+
+
+class DevicesResponseSchema(Schema):  # pylint: disable=too-few-public-methods
     after = fields.Str(required=True, allow_none=True)
     total = fields.Integer(required=True, allow_none=False)
     count = fields.Integer(required=True, allow_none=False)
@@ -72,7 +83,23 @@ class DeviceResponseSchema(Schema):  # pylint: disable=too-few-public-methods
 
     @post_load
     def create_response(self, data, **_):  # pylint: disable=no-self-use
+        return DevicesResponse(**data)
+
+
+class DeviceResponseSchema(Schema):  # pylint: disable=too-few-public-methods
+    data = fields.Nested(DeviceSchema, required=True, allow_none=False)
+
+    @post_load
+    def create_response(self, data, **_):  # pylint: disable=no-self-use
         return DeviceResponse(**data)
+
+
+class AssignmentResponseSchema(Schema):  # pylint: disable=too-few-public-methods
+    data = fields.Nested(AssignmentSchema, required=True, allow_none=False)
+
+    @post_load
+    def create_response(self, data, **_):  # pylint: disable=no-self-use
+        return AssignmentResponse(**data)
 
 
 class ErrorResponseSchema(Schema):  # pylint: disable=too-few-public-methods
@@ -83,6 +110,15 @@ class ErrorResponseSchema(Schema):  # pylint: disable=too-few-public-methods
     @post_load
     def create_response(self, data, **_):  # pylint: disable=no-self-use
         return ErrorResponse(**data)
+
+
+class CreateAssignmentPayloadSchema(Schema):  # pylint: disable=too-few-public-methods
+    assigned_to = fields.Str(required=True, allow_none=False)
+    assigned_by = fields.Str(required=True, allow_none=False)
+
+    @post_load
+    def create_payload(self, data, **_):  # pylint: disable=no-self-use
+        return CreateAssignmentPayload(**data)
 
 
 @dataclass
@@ -140,12 +176,33 @@ class Device(Serializable):
 
 
 @dataclass
-class DeviceResponse(Serializable):
-    serializer = DeviceResponseSchema()
+class Assignment(Serializable):
+    serializer = AssignmentSchema()
+    host_identifier: str
+    assigned_to: str
+    assigned_by: str
+    assigned_at: datetime
+
+
+@dataclass
+class DevicesResponse(Serializable):
+    serializer = DevicesResponseSchema()
     after: str
     total: int
     count: int
     data: list
+
+
+@dataclass
+class DeviceResponse(Serializable):
+    serializer = DeviceResponseSchema()
+    data: Device
+
+
+@dataclass
+class AssignmentResponse(Serializable):
+    serializer = AssignmentResponseSchema()
+    data: Assignment
 
 
 @dataclass
@@ -154,3 +211,10 @@ class ErrorResponse(Serializable):
     code: str
     detail: str
     source: dict
+
+
+@dataclass
+class CreateAssignmentPayload(Serializable):
+    serializer = CreateAssignmentPayloadSchema()
+    assigned_to: str
+    assigned_by: str

@@ -1,12 +1,17 @@
 from enum import Enum
 
 from devices.v2.errors import APIDevicesV2Error
-from devices.v2.schemas import DeviceResponse
+from devices.v2.schemas import (
+    AssignmentResponse,
+    CreateAssignmentPayload,
+    DevicesResponse,
+)
 from requests import HTTPError
 
 
 class DevicesV2Endpoints(str, Enum):
     devices = "/v2/devices"
+    device = "/v2/devices/%s"
     device_assignment = "/v2/devices/%s/assignment"
 
 
@@ -21,30 +26,26 @@ class Order(str, Enum):
 
 
 class Query:  # pylint: disable=too-few-public-methods
-    endpoint = None
-    schema = None
 
-    def __init__(self, session, url, **_):
+    def __init__(self, session, url):
         self._session = session
         self._url = url
         self._query_parameters = {}
 
-    def execute_request(self, resource, method="GET"):
+    def execute_request(self, resource, method="GET", schema=None, payload=None):
         url = f"{self._url}{resource}"
         try:
-            response = self._session.request(method=method, url=url, params=self._query_parameters)
+            response = self._session.request(method=method, url=url, params=self._query_parameters, json=payload)
             response.raise_for_status()
-            return self.schema.load(response.json())
+            return schema.load(response.json()) if schema else None
         except HTTPError as err:
             raise APIDevicesV2Error.wrap(err)
 
 
 class Devices(Query):
-    endpoint = DevicesV2Endpoints.devices
-    schema = DeviceResponse
 
-    def __init__(self, session, url, customer_id, **kwargs):
-        super().__init__(session, url, **kwargs)
+    def __init__(self, session, url, customer_id):
+        super().__init__(session, url)
         self._query_parameters["customerId"] = customer_id
 
     def filter_by(self, **kwargs):
@@ -71,11 +72,49 @@ class Devices(Query):
 
     def order_by(self, order: Order, order_by):
         if order_by and order:
-            # In the v2 API we've decided to change the api param to 
+            # In the v2 API we've decided to change the api param to
             # sort by. We still have the signature method as order by
-            # until v1 is totally deprecated. 
+            # until v1 is totally deprecated.
             self._query_parameters["sortby"] = f"{order.value}{order_by}"
         return self
 
-    def all(self) -> DeviceResponse:
-        return self.execute_request(self.endpoint)
+    def all(self) -> DevicesResponse:
+        return self.execute_request(DevicesV2Endpoints.devices, schema=DevicesResponse)
+
+
+class DeviceAssignment(Query):
+
+    def __init__(self, session, url, host_identifier):
+        self.host_identifier = host_identifier
+        super().__init__(session, url)
+
+    def get(self):
+        resource = DevicesV2Endpoints.device_assignment % self.host_identifier
+        return self.execute_request(resource, method="GET", schema=AssignmentResponse)
+
+    def create(self, assigned_to, assigned_by):
+        assignment = CreateAssignmentPayload(assigned_to=assigned_to, assigned_by=assigned_by)
+
+        resource = DevicesV2Endpoints.device_assignment % self.host_identifier
+        return self.execute_request(resource, method="PUT", payload=assignment.dump())
+
+    def delete(self):
+        resource = DevicesV2Endpoints.device_assignment % self.host_identifier
+        return self.execute_request(
+            resource,
+            method="DELETE",
+        )
+
+
+class Device(Query):
+
+    def __init__(self, session, url, customer_id, device_id):
+        super().__init__(session, url)
+        self.customer_id = customer_id
+        self.device_id = device_id
+
+    def _host_identifier(self):
+        return f"{self.customer_id}::{self.device_id}"
+
+    def assignment(self) -> DeviceAssignment:
+        return DeviceAssignment(session=self._session, url=self._url, host_identifier=self._host_identifier())
