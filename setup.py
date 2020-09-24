@@ -1,6 +1,6 @@
 import setuptools
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 with open('README.md') as f:
     long_description = f.read()
@@ -16,8 +16,8 @@ setuptools.setup(
     description="API-devices python client package",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/ElectricAI/api-devices',
-    packages=setuptools.find_packages(exclude="tests"),
+    url='https://github.com/ElectricAI/api-devices-client',
+    packages=setuptools.find_packages(exclude=("tests", "tests.*")),
     install_requires=requirements,
     classifiers=[],
 )

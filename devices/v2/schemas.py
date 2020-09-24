@@ -22,12 +22,12 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     source = fields.Str(required=True, allow_none=False)
     source_id = fields.Str(required=True, allow_none=False)
     source_last_sync = fields.DateTime(required=True, allow_none=False)
-    source_last_check_in = fields.DateTime(required=True, allow_none=False)
+    source_last_check_in = fields.DateTime(required=True, allow_none=True)
     enrolled = fields.Boolean(required=True, allow_none=False)
-    hostname = fields.Str(required=True, allow_none=False)
+    hostname = fields.Str(required=True, allow_none=True)
     traceable = fields.Boolean(required=True, allow_none=False)
     # Hardware
-    serial = fields.Str(required=True, allow_none=False)
+    serial = fields.Str(required=True, allow_none=True)
     hardware_model = fields.Str(required=False, allow_none=True)
     hardware_vendor = fields.Str(required=False, allow_none=True)
     hardware_description = fields.Str(required=False, allow_none=True)
@@ -57,7 +57,7 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     assigned_at = fields.DateTime(required=False, allow_none=True)
     # Computed attributes
     healthy = fields.Boolean(required=True, allow_none=False)
-    assigned = fields.Boolean(required=False, allow_none=True)
+    assigned = fields.Boolean(required=False, allow_none=False)
 
     @post_load
     def create_device(self, data, **_):  # pylint: disable=no-self-use
