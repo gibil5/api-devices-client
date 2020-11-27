@@ -69,17 +69,16 @@ workflows:
             - Run Tests
           filters:
             branches:
-              #ignore: master
-              ignore: /.*/
+              ignore: master
             tags:
               ignore: /.*/
       - Publish:
           requires:
             - Run Tests
           filters:
-            #branches:
-            #  only:
-            #    - master
+            branches:
+              only:
+                - master
             tags:
               ignore: /.*/
 
