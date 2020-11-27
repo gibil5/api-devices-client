@@ -6,6 +6,10 @@ PYPIRC = ".pypirc"
 
 
 def configure_pypirc():
+    # This script was inspired by the configuration steps
+    # here:
+    # https://gemfury.com/help/pypi-server
+
     fury_token = os.getenv("FURY_AUTH")
 
     config = configparser.ConfigParser()
