@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from distutils import util
 
 import setuptools
@@ -9,9 +10,11 @@ CIRCLE_TAG = os.getenv("CIRCLE_TAG")
 
 if CI and CIRCLE_TAG:
     version = CIRCLE_TAG
-elif CI and CIRCLE_BUILD_NUM:
+elif CI:
     # Its assumed that when running in CI the branch is master
-    version = f"master.{CIRCLE_BUILD_NUM}"
+    now = datetime.now()
+    timestamp = now.strftime("%Y%m%d.%H%M")
+    version = f"master.{timestamp}"
 else:
     version = "0.0.0"
 
