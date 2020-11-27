@@ -116,3 +116,11 @@ build: clean-build
 		. $(VENV)/bin/activate; \
 		python3 setup.py sdist; \
 	)
+
+publish: clean-build
+	@echo "Building and publishing package"
+	@( \
+		. $(VENV)/bin/activate; \
+		python3 bin/dist.py; \
+		python3 setup.py sdist upload -r fury; \
+	)
