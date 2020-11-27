@@ -8,7 +8,10 @@ clean-venv \
 clean-pyc \
 clean-test \
 test \
-coverage
+coverage \
+build \
+publish
+
 .DEFAULT_GOAL := help
 
 # Python requirements
@@ -48,6 +51,10 @@ help:
 	@echo "        Run pytest."
 	@echo "    coverage"
 	@echo "        Generate coverage report."
+	@echo "    build"
+	@echo "        Create artifact."
+	@echo "    publish"
+	@echo "        Create and publish artifact."
 
 init: clean init-venv init-precommit
 	@echo ""
@@ -116,3 +123,22 @@ build: clean-build
 		. $(VENV)/bin/activate; \
 		python3 setup.py sdist; \
 	)
+
+publish-ci:
+	@echo "Building and publishing package"
+	@( \
+		. $(VENV)/bin/activate; \
+		python3 bin/dist.py; \
+		python3 setup.py sdist upload -r fury; \
+	)
+
+publish-local: build
+	@echo "You're running in your local machine. You should not publish from here..."
+	@echo "Just a build was run..."
+
+
+ifeq (true,$(CI))
+publish: publish-ci
+else
+publish: publish-local
+endif

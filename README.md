@@ -1,6 +1,6 @@
 # api-devices-client
 
-[![Version](https://img.shields.io/badge/version-0.0.1-blue)](https://img.shields.io/badge/version-0.0.1-blue)
+[![Version](https://img.shields.io/badge/version-0.0.2-blue)](https://img.shields.io/badge/version-0.0.2-blue)
 [![CircleCI](https://circleci.com/gh/ElectricAI/api-devices-client.svg?style=svg&circle-token=6b1b7d4e6fe9e1758e8c1f10f6170ddf66341176)](https://circleci.com/gh/ElectricAI/api-devices-client)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9ed5d6f56b4db526ecbb/maintainability)](https://codeclimate.com/repos/5f5a99eb03b2c5018b011671/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/9ed5d6f56b4db526ecbb/test_coverage)](https://codeclimate.com/repos/5f5a99eb03b2c5018b011671/test_coverage)
@@ -45,7 +45,7 @@ filters = {"gatekeeper": True}
 filter_by_operator = "OR"
 
 result = DevicesV2API(url=url, auth_token=token) \
-    .get_devices(customer_id=customer_id) \
+    .devices(customer_id=customer_id) \
     .limit(limit=limit) \
     .after(after="") \
     .filter_by(**filters) \

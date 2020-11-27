@@ -2,7 +2,7 @@ version: 2.1
 
 # Required environment variables
 # CC_TEST_REPORTER_ID
-
+# FURY_AUTH
 
 executors:
   default:
@@ -24,9 +24,24 @@ workflows:
               only: /v([0-9]+){1}(\.[0-9]+){2}/
             branches:
               ignore: /.*/
+      - Set Up Python Virtual Environment:
+          filters:
+            tags:
+              only: /v([0-9]+){1}(\.[0-9]+){2}/
+            branches:
+              ignore: /.*/
       - Run Tests:
           requires:
             - Install Code Climate
+            - Set Up Python Virtual Environment
+          filters:
+            tags:
+              only: /v([0-9]+){1}(\.[0-9]+){2}/
+            branches:
+              ignore: /.*/
+      - Publish:
+          requires:
+            - Run Tests
           filters:
             tags:
               only: /v([0-9]+){1}(\.[0-9]+){2}/
@@ -38,10 +53,32 @@ workflows:
           filters:
             tags:
               ignore: /.*/
+      - Set Up Python Virtual Environment:
+          filters:
+            tags:
+              ignore: /.*/
       - Run Tests:
           requires:
             - Install Code Climate
+            - Set Up Python Virtual Environment
           filters:
+            tags:
+              ignore: /.*/
+      - Build:
+          requires:
+            - Run Tests
+          filters:
+            branches:
+              ignore: master
+            tags:
+              ignore: /.*/
+      - Publish:
+          requires:
+            - Run Tests
+          filters:
+            branches:
+              only:
+                - master
             tags:
               ignore: /.*/
 
@@ -59,16 +96,27 @@ jobs:
           paths:
             - ./cc-test-reporter
 
-  Run Tests:
+  Set Up Python Virtual Environment:
     executor: python
     steps:
       - checkout
       - attach_workspace:
           at: ~/repo
       - run:
-          name: Set up python environment
+          name: Install Python Requirements
           command: |
             make init-venv
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - ./venv
+
+  Run Tests:
+    executor: python
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/repo
       - run:
           name: Running tests
           command: |
@@ -81,3 +129,25 @@ jobs:
           path: test-reports
       - store_test_results:
           path: test-reports
+
+  Build:
+    executor: python
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Create the distribution package
+          command: |
+            make build
+
+  Publish:
+    executor: python
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Create and Upload the distribution package
+          command: |
+            make publish
