@@ -303,7 +303,10 @@ def test_device_assignment_delete(customer_id, device_id, url):
 # Scenarios for MDM
 # Scenario 01: MDM create Query
 # Scenario 02: Get MDM success
-def test_mdm_create(customer_id, mdm_name, url):
+# Scenario 03: Get MDM incorrect mdm
+# Scenario 04: Create MDM success
+# Scenario 05: Create MDM incorrect mdm
+def test_mdm_create_query(customer_id, mdm_name, url):
     # Given
     session = Session()
 
@@ -344,7 +347,7 @@ def test_get_mdm_success(customer_id, mdm_name, url, mdm):
     assert mdm_info.enroll_url == mdm["data"]["enroll_url"]
 
 
-def test_mdm_bad_mdm_name(url, auth_token, customer_id):
+def test_get_mdm_incorrect_mdm_name(url, auth_token, customer_id):
     # Given
     session = Session()
     name = "not_an_mdm"
@@ -354,6 +357,48 @@ def test_mdm_bad_mdm_name(url, auth_token, customer_id):
     # When/Then
     with pytest.raises(InvalidParamsError):
         _ = mdm_query.get(name=name)
+
+
+@responses.activate
+def test_create_mdm_success(customer_id, mdm_name, url, mdm):
+    # Given
+    session = Session()
+
+    expected_endpoint = "/v2/mdm"
+    expected_url = f"{url}{expected_endpoint}"
+    responses.add_callback(
+        responses.POST, expected_url, callback=http_200_callback(body=mdm, request_headers=_APP_JSON)
+    )
+
+    # When
+    mdm_query = MDM(session=session, url=url, customer_id=customer_id)
+    response = mdm_query.create(name=mdm_name)
+
+    # Then
+    mdm_info = response.data
+    assert mdm_query._url == url
+    assert mdm_query.customer_id == customer_id
+
+    assert str(mdm_info.customer_id) == customer_id
+    assert mdm_info.name == mdm_name
+    assert mdm_info.state == mdm["data"]["state"]
+    assert isinstance(mdm_info.updated_at, datetime)
+    assert isinstance(mdm_info.created_at, datetime)
+    assert mdm_info.identifier == mdm["data"]["identifier"]
+    assert mdm_info.server_url == mdm["data"]["server_url"]
+    assert mdm_info.enroll_url == mdm["data"]["enroll_url"]
+
+
+def test_create_mdm_incorrect_mdm_name(url, auth_token, customer_id):
+    # Given
+    session = Session()
+    name = "not_an_mdm"
+
+    mdm_query = MDM(session=session, url=url, customer_id=customer_id)
+
+    # When/Then
+    with pytest.raises(InvalidParamsError):
+        _ = mdm_query.create(name=name)
 
 
 class SomeResource(Query):

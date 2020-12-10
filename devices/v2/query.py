@@ -5,6 +5,7 @@ from devices.v2.errors import APIDevicesV2Error
 from devices.v2.schemas import (
     AssignmentResponse,
     CreateAssignmentPayload,
+    CreateMDMPayload,
     DevicesResponse,
     MDMName,
     MDMResponse,
@@ -13,6 +14,8 @@ from requests import HTTPError
 
 
 class DevicesV2Endpoints(str, Enum):
+
+    # Devices
     devices = "/v2/devices"
     device = "/v2/devices/%s"
     device_assignment = "/v2/devices/%s/assignment"
@@ -138,3 +141,11 @@ class MDM(Query):
             raise InvalidParamsError(f"MDM name should be one of {list(MDMName)}")
         resource = DevicesV2Endpoints.customer_mdm.format(name=name, customer_id=self.customer_id)
         return self.execute_request(resource=resource, method="GET", schema=MDMResponse)
+
+    def create(self, name):
+        if name not in list(MDMName):
+            raise InvalidParamsError(f"MDM name should be one of {list(MDMName)}")
+        create_mdm_payload = CreateMDMPayload(customer_id=self.customer_id, name=name)
+        return self.execute_request(
+            resource=DevicesV2Endpoints.mdm, method="POST", payload=create_mdm_payload.dump(), schema=MDMResponse
+        )
