@@ -1,16 +1,16 @@
 import pytest
 from devices.errors import InvalidParamsError, InvalidTokenError
 from devices.v2.client import DevicesV2API
-from devices.v2.query import MDM, Device, Devices, Query
+from devices.v2.query import MDM, Device, Devices, DownloadLink, Query
 from requests import Session
 
 
 def test_client_session_creation_success(url, auth_token):
     # Given / When
     with DevicesV2API(url, auth_token) as devices:
-        assert devices._session.auth.token == auth_token
-        assert devices._url == url
-        assert isinstance(devices._session, Session)
+        assert devices.session.auth.token == auth_token
+        assert devices.url == url
+        assert isinstance(devices.session, Session)
 
 
 def test_client_session_invalid_token(url):
@@ -29,9 +29,9 @@ def test_devices(url, auth_token):
 
     # Then
     assert isinstance(customer_devices, Devices)
-    assert customer_devices._session == devices._session
-    assert customer_devices._url == devices._url
-    assert customer_devices._query_parameters["customerId"] == customer_id
+    assert customer_devices.session == devices.session
+    assert customer_devices.url == devices.url
+    assert customer_devices.query_parameters["customerId"] == customer_id
 
 
 def test_devices_missing_customer_id(url, auth_token):
@@ -55,8 +55,8 @@ def test_device(url, auth_token):
 
     # Then
     assert isinstance(device_query, Device)
-    assert device_query._session == devices._session
-    assert device_query._url == devices._url
+    assert device_query.session == devices.session
+    assert device_query.url == devices.url
     assert device_query.customer_id == customer_id
     assert device_query.device_id == device_id
 
@@ -78,16 +78,14 @@ def test_device_missing_customer_id(url, auth_token):
 # Scenario 03: Create MDM Invalid MDM name
 def test_mdm(url, auth_token, customer_id):
     # Given
-    mdm_name = "kaseya"
     with DevicesV2API(url, auth_token) as devices:
         # When
         customer_mdm = devices.mdm(customer_id=customer_id)
 
         # Then
     assert isinstance(customer_mdm, MDM)
-    assert customer_mdm._session == devices._session
-    assert customer_mdm._url == devices._url
-
+    assert customer_mdm.session == devices.session
+    assert customer_mdm.url == devices.url
     assert customer_mdm.customer_id == customer_id
 
 
@@ -101,26 +99,53 @@ def test_mdm_missing_customer_id(url, auth_token):
             _ = devices.mdm(customer_id=customer_id)
 
 
-@pytest.fixture
-def customer_id():
+# Scenarios for DownloadLink
+# Scenario 01: Create DownloadLink query
+# Scenario 02: Invalid params
+def test_download_link(url, auth_token, customer_id):
+    # Given
+    with DevicesV2API(url, auth_token) as devices:
+        # When
+        download_link = devices.download_link(customer_id=customer_id)
+
+    # Then
+    assert isinstance(download_link, DownloadLink)
+    assert download_link.session == devices.session
+    assert download_link.url == devices.url
+    assert download_link.customer_id == customer_id
+
+
+def test_download_link_missing_customer_id(url, auth_token):
+    # Given
+    customer_id = None
+
+    with DevicesV2API(url, auth_token) as devices:
+        # When/Then
+        with pytest.raises(InvalidParamsError):
+            _ = devices.download_link(customer_id=customer_id)
+
+
+@pytest.fixture(name="customer_id")
+def get_customer_id():
     return "9a919a42-b506-49ee-b053-402827b761b7"
 
 
-@pytest.fixture
-def url():
+@pytest.fixture(name="url")
+def get_url():
     return "http://someurlrandom.com.ar"
 
 
-@pytest.fixture
-def auth_token():
+@pytest.fixture(name="auth_token")
+def get_auth_token():
     return "aRandomBearerTokenForAuth0Authentication"
 
 
-class SomeResource(Query):
+class SomeResource(Query):  # pylint: disable=too-few-public-methods
+    """
+    No need to re-define __init__ here since by default Python will look for
+    the parent's __init__ method when it's not present in the child class.
+    """
 
-    def __init__(self, session, url):
-        super().__init__(session, url)
 
-
-class InvalidResource:
+class InvalidResource:  # pylint: disable=too-few-public-methods
     pass

@@ -7,22 +7,21 @@ from devices.v2.schemas import (
     CreateAssignmentPayload,
     CreateMDMPayload,
     DevicesResponse,
+    DownloadLinkResponse,
     MDMName,
     MDMResponse,
 )
 from requests import HTTPError
 
 
-class DevicesV2Endpoints(str, Enum):
-
-    # Devices
-    devices = "/v2/devices"
-    device = "/v2/devices/%s"
-    device_assignment = "/v2/devices/%s/assignment"
-
+class DevicesV2Endpoint(str, Enum):
+    DEVICES = "/v2/devices"
+    DEVICE = "/v2/devices/{id}"
+    DEVICE_ASSIGNMENT = "/v2/devices/{id}/assignment"
     # MDM
-    customer_mdm = "/v2/mdm/{name}/{customer_id}"
-    mdm = "/v2/mdm"
+    MDM = "/v2/mdm"
+    CUSTOMER_MDM = "/v2/mdm/{name}/{customer_id}"
+    DOWNLOAD_LINK = "/v2/download-link/{customer_id}"
 
 
 class FilterByOperator(str, Enum):
@@ -42,10 +41,27 @@ class Query:  # pylint: disable=too-few-public-methods
         self._url = url
         self._query_parameters = {}
 
+    @property
+    def session(self):
+        return self._session
+
+    @property
+    def url(self):
+        return self._url
+
+    @property
+    def query_parameters(self):
+        return self._query_parameters
+
     def execute_request(self, resource, method="GET", schema=None, payload=None):
         url = f"{self._url}{resource}"
         try:
-            response = self._session.request(method=method, url=url, params=self._query_parameters, json=payload)
+            response = self._session.request(
+                method=method,
+                url=url,
+                params=self._query_parameters,
+                json=payload,
+            )
             response.raise_for_status()
             return schema.load(response.json()) if schema else None
         except HTTPError as err:
@@ -89,7 +105,10 @@ class Devices(Query):
         return self
 
     def all(self) -> DevicesResponse:
-        return self.execute_request(DevicesV2Endpoints.devices, schema=DevicesResponse)
+        return self.execute_request(
+            DevicesV2Endpoint.DEVICES,
+            schema=DevicesResponse,
+        )
 
 
 class DeviceAssignment(Query):
@@ -99,17 +118,27 @@ class DeviceAssignment(Query):
         super().__init__(session, url)
 
     def get(self):
-        resource = DevicesV2Endpoints.device_assignment % self.host_identifier
-        return self.execute_request(resource, method="GET", schema=AssignmentResponse)
+        resource = DevicesV2Endpoint.DEVICE_ASSIGNMENT.format(id=self.host_identifier)
+        return self.execute_request(
+            resource,
+            method="GET",
+            schema=AssignmentResponse,
+        )
 
     def create(self, assigned_to, assigned_by):
-        assignment = CreateAssignmentPayload(assigned_to=assigned_to, assigned_by=assigned_by)
-
-        resource = DevicesV2Endpoints.device_assignment % self.host_identifier
-        return self.execute_request(resource, method="PUT", payload=assignment.dump())
+        assignment = CreateAssignmentPayload(
+            assigned_to=assigned_to,
+            assigned_by=assigned_by,
+        )
+        resource = DevicesV2Endpoint.DEVICE_ASSIGNMENT.format(id=self.host_identifier)
+        return self.execute_request(
+            resource,
+            method="PUT",
+            payload=assignment.dump(),
+        )
 
     def delete(self):
-        resource = DevicesV2Endpoints.device_assignment % self.host_identifier
+        resource = DevicesV2Endpoint.DEVICE_ASSIGNMENT.format(id=self.host_identifier)
         return self.execute_request(
             resource,
             method="DELETE",
@@ -127,7 +156,11 @@ class Device(Query):
         return f"{self.customer_id}::{self.device_id}"
 
     def assignment(self) -> DeviceAssignment:
-        return DeviceAssignment(session=self._session, url=self._url, host_identifier=self._host_identifier())
+        return DeviceAssignment(
+            session=self._session,
+            url=self._url,
+            host_identifier=self._host_identifier(),
+        )
 
 
 class MDM(Query):
@@ -139,13 +172,38 @@ class MDM(Query):
     def get(self, name):
         if name not in list(MDMName):
             raise InvalidParamsError(f"MDM name should be one of {list(MDMName)}")
-        resource = DevicesV2Endpoints.customer_mdm.format(name=name, customer_id=self.customer_id)
-        return self.execute_request(resource=resource, method="GET", schema=MDMResponse)
+        resource = DevicesV2Endpoint.CUSTOMER_MDM.format(
+            name=name,
+            customer_id=self.customer_id,
+        )
+        return self.execute_request(
+            resource=resource,
+            method="GET",
+            schema=MDMResponse,
+        )
 
     def create(self, name):
         if name not in list(MDMName):
             raise InvalidParamsError(f"MDM name should be one of {list(MDMName)}")
         create_mdm_payload = CreateMDMPayload(customer_id=self.customer_id, name=name)
         return self.execute_request(
-            resource=DevicesV2Endpoints.mdm, method="POST", payload=create_mdm_payload.dump(), schema=MDMResponse
+            resource=DevicesV2Endpoint.MDM,
+            method="POST",
+            payload=create_mdm_payload.dump(),
+            schema=MDMResponse,
+        )
+
+
+class DownloadLink(Query):
+
+    def __init__(self, session, url, customer_id):
+        super().__init__(session, url)
+        self.customer_id = customer_id
+
+    def get(self):
+        resource = DevicesV2Endpoint.DOWNLOAD_LINK.format(customer_id=self.customer_id)
+        return self.execute_request(
+            resource=resource,
+            method="GET",
+            schema=DownloadLinkResponse,
         )

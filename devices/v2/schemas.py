@@ -134,7 +134,6 @@ class CreateMDMPayloadSchema(Schema):  # pylint: disable=too-few-public-methods
 @dataclass
 class Device(Serializable):
     serializer = DeviceSchema()
-
     # Ids
     customer_id: str
     id: str
@@ -249,7 +248,6 @@ class MDMState(str, Enum):
 
 
 class MDMSchema(Schema):  # pylint: disable=too-few-public-methods
-
     customer_id = fields.UUID(required=True)
     name = fields.Str(required=True, validate=validate.OneOf(list(MDMName)))
     state = fields.Str(required=True, validate=validate.OneOf(list(MDMState)))
@@ -281,7 +279,7 @@ class MDMResponseSchema(Schema):  # pylint: disable=too-few-public-methods
     data = fields.Nested(MDMSchema, required=True, allow_none=False)
 
     @post_load
-    def create_response(self, data, **_):  # pylint: disable=no-self-use
+    def create_mdm_response(self, data, **_):  # pylint: disable=no-self-use
         return MDMResponse(**data)
 
 
@@ -289,3 +287,33 @@ class MDMResponseSchema(Schema):  # pylint: disable=too-few-public-methods
 class MDMResponse(Serializable):
     serializer = MDMResponseSchema()
     data: MDM
+
+
+class DownloadLinkSchema(Schema):  # pylint: disable=too-few-public-methods
+    jamf = fields.Str()
+    kaseya = fields.Str()
+
+    @post_load
+    def create_download_link(self, data, **_):  # pylint: disable=no-self-use
+        return DownloadLink(**data)
+
+
+@dataclass
+class DownloadLink(Serializable):
+    serializer = DownloadLinkSchema()
+    jamf: str
+    kaseya: str
+
+
+class DownloadLinkResponseSchema(Schema):  # pylint: disable=too-few-public-methods
+    data = fields.Nested(DownloadLinkSchema, required=True, allow_none=False)
+
+    @post_load
+    def create_download_link_response(self, data, **_):  # pylint: disable=no-self-use
+        return DownloadLinkResponse(**data)
+
+
+@dataclass
+class DownloadLinkResponse(Serializable):
+    serializer = DownloadLinkResponseSchema()
+    data: DownloadLink

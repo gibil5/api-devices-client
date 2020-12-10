@@ -10,6 +10,7 @@ from devices.v2.query import (
     Device,
     DeviceAssignment,
     Devices,
+    DownloadLink,
     FilterByOperator,
     Order,
     Query,
@@ -31,7 +32,7 @@ def test_execute_query_success(url, customer_id, devices):
     session = Session()
     devices_query = Devices(session, url, customer_id=customer_id)
 
-    expected_endpoint = f"/v2/devices"
+    expected_endpoint = "/v2/devices"
     expected_url = f"{url}{expected_endpoint}"
     responses.add_callback(
         responses.GET, expected_url, callback=http_200_callback(body=devices, request_headers=_APP_JSON)
@@ -56,7 +57,7 @@ def test_execute_query_error(url, customer_id):
     session = Session()
     devices_query = Devices(session, url, customer_id=customer_id)
 
-    expected_endpoint = f"/v2/devices"
+    expected_endpoint = "/v2/devices"
     expected_url = f"{url}{expected_endpoint}"
     responses.add_callback(
         responses.GET, expected_url, callback=http_400_callback(body=error_response, request_headers=_APP_JSON)
@@ -87,9 +88,9 @@ def test_create_devices_success(customer_id, url):
     devices_query = Devices(session, url, customer_id=customer_id)
 
     # Then
-    assert devices_query._session == session
-    assert devices_query._url == url
-    assert devices_query._query_parameters["customerId"] == customer_id
+    assert devices_query.session == session
+    assert devices_query.url == url
+    assert devices_query.query_parameters["customerId"] == customer_id
 
 
 def test_filter_by(url, customer_id):
@@ -101,7 +102,7 @@ def test_filter_by(url, customer_id):
     devices_query.filter_by(bitlocker=True, firewall=True)
 
     # Then
-    params = devices_query._query_parameters
+    params = devices_query.query_parameters
     assert params["customerId"] == customer_id
     assert params["filterby"] == "bitlocker:true,firewall:true"
 
@@ -115,7 +116,7 @@ def test_filter_by_operator(url, customer_id):
     devices_query.filter_by_operator(FilterByOperator.AND)
 
     # Then
-    params = devices_query._query_parameters
+    params = devices_query.query_parameters
     assert params["customerId"] == customer_id
     assert params["filterbyOperator"] == "and"
 
@@ -129,7 +130,7 @@ def test_limit(url, customer_id):
     devices_query.limit(2)
 
     # Then
-    params = devices_query._query_parameters
+    params = devices_query.query_parameters
     assert params["customerId"] == customer_id
     assert params["limit"] == 2
 
@@ -143,7 +144,7 @@ def test_after(url, customer_id, device_id):
     devices_query.after(device_id)
 
     # Then
-    params = devices_query._query_parameters
+    params = devices_query.query_parameters
     assert params["customerId"] == customer_id
     assert params["after"] == device_id
 
@@ -157,24 +158,22 @@ def test_order_by(url, customer_id):
     devices_query.order_by(order=Order.ASCENDING, order_by="os_version")
 
     # Then
-    params = devices_query._query_parameters
+    params = devices_query.query_parameters
     assert params["customerId"] == customer_id
     assert params["sortby"] == "+os_version"
 
 
 # Device Scenarios
-# Scenario 01: Create Query
+# Scenario 01: Create query
 # Scenario 02: Assignment
-
-
 def test_create_device_success(customer_id, device_id, url):
     # Given
     session = Session()
     device_query = Device(session, url, customer_id=customer_id, device_id=device_id)
 
     # Then
-    assert device_query._session == session
-    assert device_query._url == url
+    assert device_query.session == session
+    assert device_query.url == url
     assert device_query.customer_id == customer_id
     assert device_query.device_id == device_id
 
@@ -188,8 +187,8 @@ def test_device_assignment_success(customer_id, device_id, url):
     assignment_query = device_query.assignment()
 
     # Then
-    assert device_query._session == session
-    assert device_query._url == url
+    assert device_query.session == session
+    assert device_query.url == url
     assert device_query.customer_id == customer_id
     assert device_query.device_id == device_id
 
@@ -197,8 +196,10 @@ def test_device_assignment_success(customer_id, device_id, url):
 
 
 # Device Assignment Scenarios
-# Scenario 01: Create Query
-# Scenario 02: Assign User
+# Scenario 01: Create query
+# Scenario 02: POST assignment
+# Scenario 03: GET assignment
+# Scenario 04: DELETE assignment
 def test_create_device_assignment_success(customer_id, device_id, url):
     # Given
     host_identifier = f"{customer_id}::{device_id}"
@@ -208,8 +209,8 @@ def test_create_device_assignment_success(customer_id, device_id, url):
     device_assignment_query = DeviceAssignment(session, url, host_identifier=host_identifier)
 
     # Then
-    assert device_assignment_query._session == session
-    assert device_assignment_query._url == url
+    assert device_assignment_query.session == session
+    assert device_assignment_query.url == url
     assert device_assignment_query.host_identifier == host_identifier
 
 
@@ -219,15 +220,14 @@ def test_device_assignment_create(customer_id, device_id, url):
     host_identifier = f"{customer_id}::{device_id}"
     assigned_to = "a73af01b-fd2d-4af0-af24-b5e1c5b321da"
     assigned_by = "4ae1fa54-e832-422a-ac59-4daeea03cfa9"
-
     session = Session()
-
     payload = dict(assigned_to=assigned_to, assigned_by=assigned_by)
-
     expected_endpoint = f"/v2/devices/{host_identifier}/assignment"
     expected_url = f"{url}{expected_endpoint}"
     responses.add_callback(
-        responses.PUT, expected_url, callback=http_204_callback(request_headers=_APP_JSON, request_body=payload)
+        responses.PUT,
+        expected_url,
+        callback=http_204_callback(request_headers=_APP_JSON, request_body=payload),
     )
 
     # When
@@ -235,8 +235,8 @@ def test_device_assignment_create(customer_id, device_id, url):
     device_assignment_query.create(assigned_by=assigned_by, assigned_to=assigned_to)
 
     # Then
-    assert device_assignment_query._session == session
-    assert device_assignment_query._url == url
+    assert device_assignment_query.session == session
+    assert device_assignment_query.url == url
     assert device_assignment_query.host_identifier == host_identifier
 
 
@@ -247,9 +247,7 @@ def test_device_assignment_get(customer_id, device_id, url):
     assigned_to = "a73af01b-fd2d-4af0-af24-b5e1c5b321da"
     assigned_by = "4ae1fa54-e832-422a-ac59-4daeea03cfa9"
     assigned_at = datetime.now()
-
     session = Session()
-
     payload = dict(
         data=dict(
             host_identifier=host_identifier,
@@ -258,18 +256,21 @@ def test_device_assignment_get(customer_id, device_id, url):
             assigned_at=assigned_at.isoformat()
         )
     )
-
     expected_endpoint = f"/v2/devices/{host_identifier}/assignment"
     expected_url = f"{url}{expected_endpoint}"
-    responses.add_callback(responses.GET, expected_url, callback=http_200_callback(body=payload))
+    responses.add_callback(
+        responses.GET,
+        expected_url,
+        callback=http_200_callback(body=payload),
+    )
 
     # When
     device_assignment_query = DeviceAssignment(session, url, host_identifier=host_identifier)
     response = device_assignment_query.get()
 
     # Then
-    assert device_assignment_query._session == session
-    assert device_assignment_query._url == url
+    assert device_assignment_query.session == session
+    assert device_assignment_query.url == url
     assert device_assignment_query.host_identifier == host_identifier
 
     assignment = response.data
@@ -288,15 +289,19 @@ def test_device_assignment_delete(customer_id, device_id, url):
 
     expected_endpoint = f"/v2/devices/{host_identifier}/assignment"
     expected_url = f"{url}{expected_endpoint}"
-    responses.add_callback(responses.DELETE, expected_url, callback=http_204_callback())
+    responses.add_callback(
+        responses.DELETE,
+        expected_url,
+        callback=http_204_callback(),
+    )
 
     # When
     device_assignment_query = DeviceAssignment(session, url, host_identifier=host_identifier)
     device_assignment_query.delete()
 
     # Then
-    assert device_assignment_query._session == session
-    assert device_assignment_query._url == url
+    assert device_assignment_query.session == session
+    assert device_assignment_query.url == url
     assert device_assignment_query.host_identifier == host_identifier
 
 
@@ -306,7 +311,7 @@ def test_device_assignment_delete(customer_id, device_id, url):
 # Scenario 03: Get MDM incorrect mdm
 # Scenario 04: Create MDM success
 # Scenario 05: Create MDM incorrect mdm
-def test_mdm_create_query(customer_id, mdm_name, url):
+def test_mdm_create_query(customer_id, url):
     # Given
     session = Session()
 
@@ -314,8 +319,8 @@ def test_mdm_create_query(customer_id, mdm_name, url):
     mdm_query = MDM(session=session, url=url, customer_id=customer_id)
 
     # Then
-    assert mdm_query._session == session
-    assert mdm_query._url == url
+    assert mdm_query.session == session
+    assert mdm_query.url == url
     assert mdm_query.customer_id == customer_id
 
 
@@ -326,7 +331,11 @@ def test_get_mdm_success(customer_id, mdm_name, url, mdm):
 
     expected_endpoint = f"/v2/mdm/{mdm_name}/{customer_id}"
     expected_url = f"{url}{expected_endpoint}"
-    responses.add_callback(responses.GET, expected_url, callback=http_200_callback(body=mdm, request_headers=_APP_JSON))
+    responses.add_callback(
+        responses.GET,
+        expected_url,
+        callback=http_200_callback(body=mdm, request_headers=_APP_JSON),
+    )
 
     # When
     mdm_query = MDM(session=session, url=url, customer_id=customer_id)
@@ -334,7 +343,7 @@ def test_get_mdm_success(customer_id, mdm_name, url, mdm):
 
     # Then
     mdm_info = response.data
-    assert mdm_query._url == url
+    assert mdm_query.url == url
     assert mdm_query.customer_id == customer_id
 
     assert str(mdm_info.customer_id) == customer_id
@@ -347,7 +356,7 @@ def test_get_mdm_success(customer_id, mdm_name, url, mdm):
     assert mdm_info.enroll_url == mdm["data"]["enroll_url"]
 
 
-def test_get_mdm_incorrect_mdm_name(url, auth_token, customer_id):
+def test_get_mdm_incorrect_mdm_name(url, customer_id):
     # Given
     session = Session()
     name = "not_an_mdm"
@@ -367,7 +376,10 @@ def test_create_mdm_success(customer_id, mdm_name, url, mdm):
     expected_endpoint = "/v2/mdm"
     expected_url = f"{url}{expected_endpoint}"
     responses.add_callback(
-        responses.POST, expected_url, callback=http_200_callback(body=mdm, request_headers=_APP_JSON)
+        responses.POST, expected_url, callback=http_200_callback(
+            body=mdm,
+            request_headers=_APP_JSON,
+        )
     )
 
     # When
@@ -376,7 +388,7 @@ def test_create_mdm_success(customer_id, mdm_name, url, mdm):
 
     # Then
     mdm_info = response.data
-    assert mdm_query._url == url
+    assert mdm_query.url == url
     assert mdm_query.customer_id == customer_id
 
     assert str(mdm_info.customer_id) == customer_id
@@ -389,7 +401,7 @@ def test_create_mdm_success(customer_id, mdm_name, url, mdm):
     assert mdm_info.enroll_url == mdm["data"]["enroll_url"]
 
 
-def test_create_mdm_incorrect_mdm_name(url, auth_token, customer_id):
+def test_create_mdm_incorrect_mdm_name(url, customer_id):
     # Given
     session = Session()
     name = "not_an_mdm"
@@ -401,44 +413,90 @@ def test_create_mdm_incorrect_mdm_name(url, auth_token, customer_id):
         _ = mdm_query.create(name=name)
 
 
-class SomeResource(Query):
+# Scenarios for DownloadLink
+# Scenario 01: DownloadLink create Query
+# Scenario 02: Get DownloadLink success
+def test_download_link_query(customer_id, url):
+    # Given
+    session = Session()
 
-    def __init__(self, session, url):
-        super().__init__(session, url)
+    # When
+    download_link_query = DownloadLink(
+        session=session,
+        url=url,
+        customer_id=customer_id,
+    )
+
+    # Then
+    assert download_link_query.session == session
+    assert download_link_query.url == url
+    assert download_link_query.customer_id == customer_id
 
 
-@pytest.fixture
-def url():
+@responses.activate
+def test_get_download_link_success(customer_id, url, download_links):
+    # Given
+    session = Session()
+
+    expected_endpoint = f"/v2/download-link/{customer_id}"
+    expected_url = f"{url}{expected_endpoint}"
+    responses.add_callback(
+        responses.GET,
+        expected_url,
+        callback=http_200_callback(body=download_links, request_headers=_APP_JSON),
+    )
+
+    # When
+    download_link_query = DownloadLink(session=session, url=url, customer_id=customer_id)
+    response = download_link_query.get()
+
+    # Then
+    assert download_link_query.url == url
+    assert download_link_query.customer_id == customer_id
+
+    assert response.data.jamf == download_links["data"]["jamf"]
+    assert response.data.kaseya == download_links["data"]["kaseya"]
+
+
+class SomeResource(Query):  # pylint: disable=too-few-public-methods
+    """
+    No need to re-define __init__ here since by default Python will look for
+    the parent's __init__ method when it's not present in the child class.
+    """
+
+
+@pytest.fixture(name="url")
+def get_url():
     return "http://someurlrandom.com.ar"
 
 
-@pytest.fixture
-def auth_token():
+@pytest.fixture(name="auth_token")
+def get_auth_token():
     return "aRandomBearerTokenForAuth0Authentication"
 
 
-@pytest.fixture
-def customer_id():
+@pytest.fixture(name="customer_id")
+def get_customer_id():
     return "9a919a42-b506-49ee-b053-402827b761b7"
 
 
-@pytest.fixture
-def device_id():
+@pytest.fixture(name="device_id")
+def get_device_id():
     return "9c9a7ce5b2fca4658633800bf9cd9d6e"
 
 
-@pytest.fixture
-def mdm_name():
+@pytest.fixture(name="mdm_name")
+def get_mdm_name():
     return "kaseya"
 
 
-@pytest.fixture
-def org_id():
+@pytest.fixture(name="org_id")
+def get_org_id():
     return "987654345678899010101"
 
 
-@pytest.fixture
-def devices(customer_id, device_id):
+@pytest.fixture(name="devices")
+def get_devices(customer_id, device_id):
     return {
         "after":
             None,
@@ -467,8 +525,8 @@ def devices(customer_id, device_id):
     }
 
 
-@pytest.fixture
-def mdm(customer_id, mdm_name, org_id, url):
+@pytest.fixture(name="mdm")
+def get_mdm(customer_id, mdm_name, org_id, url):
     return {
         "data":
             {
@@ -481,4 +539,14 @@ def mdm(customer_id, mdm_name, org_id, url):
                 "server_url": url,
                 "enroll_url": f"{url}/enroll"
             }
+    }
+
+
+@pytest.fixture(name="download_links")
+def get_download_links():
+    return {
+        "data": {
+            "jamf": "jamf_url",
+            "kaseya": "kaseya_url",
+        },
     }
