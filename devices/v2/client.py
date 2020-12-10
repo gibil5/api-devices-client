@@ -41,6 +41,6 @@ class DevicesV2API:
 
     def mdm(self, customer_id):
         if not customer_id:
-            raise InvalidParamsError("Both MDM name and customer_id are needed to query API-devices")
+            raise InvalidParamsError("customer_id is needed to query API-devices")
 
         return MDM(session=self._session, url=self._url, customer_id=customer_id)
