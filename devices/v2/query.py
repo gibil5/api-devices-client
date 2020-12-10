@@ -14,6 +14,8 @@ from requests import HTTPError
 
 
 class DevicesV2Endpoints(str, Enum):
+
+    # Devices
     devices = "/v2/devices"
     device = "/v2/devices/%s"
     device_assignment = "/v2/devices/%s/assignment"

@@ -305,7 +305,7 @@ def test_device_assignment_delete(customer_id, device_id, url):
 # Scenario 02: Get MDM success
 # Scenario 03: Get MDM incorrect mdm
 # Scenario 04: Create MDM success
-# Scenario 04: Create MDM incorrect mdm
+# Scenario 05: Create MDM incorrect mdm
 def test_mdm_create_query(customer_id, mdm_name, url):
     # Given
     session = Session()
