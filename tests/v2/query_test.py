@@ -1,10 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 
 import pytest
 import responses
+from devices.errors import InvalidParamsError
 from devices.v2.errors import APIDevicesV2Error
 from devices.v2.query import (
+    MDM,
     Device,
     DeviceAssignment,
     Devices,
@@ -298,6 +300,62 @@ def test_device_assignment_delete(customer_id, device_id, url):
     assert device_assignment_query.host_identifier == host_identifier
 
 
+# Scenarios for MDM
+# Scenario 01: MDM create Query
+# Scenario 02: Get MDM success
+def test_mdm_create(customer_id, mdm_name, url):
+    # Given
+    session = Session()
+
+    # When
+    mdm_query = MDM(session=session, url=url, customer_id=customer_id)
+
+    # Then
+    assert mdm_query._session == session
+    assert mdm_query._url == url
+    assert mdm_query.customer_id == customer_id
+
+
+@responses.activate
+def test_get_mdm_success(customer_id, mdm_name, url, mdm):
+    # Given
+    session = Session()
+
+    expected_endpoint = f"/v2/mdm/{mdm_name}/{customer_id}"
+    expected_url = f"{url}{expected_endpoint}"
+    responses.add_callback(responses.GET, expected_url, callback=http_200_callback(body=mdm, request_headers=_APP_JSON))
+
+    # When
+    mdm_query = MDM(session=session, url=url, customer_id=customer_id)
+    response = mdm_query.get(name=mdm_name)
+
+    # Then
+    mdm_info = response.data
+    assert mdm_query._url == url
+    assert mdm_query.customer_id == customer_id
+
+    assert str(mdm_info.customer_id) == customer_id
+    assert mdm_info.name == mdm_name
+    assert mdm_info.state == mdm["data"]["state"]
+    assert isinstance(mdm_info.updated_at, datetime)
+    assert isinstance(mdm_info.created_at, datetime)
+    assert mdm_info.identifier == mdm["data"]["identifier"]
+    assert mdm_info.server_url == mdm["data"]["server_url"]
+    assert mdm_info.enroll_url == mdm["data"]["enroll_url"]
+
+
+def test_mdm_bad_mdm_name(url, auth_token, customer_id):
+    # Given
+    session = Session()
+    name = "not_an_mdm"
+
+    mdm_query = MDM(session=session, url=url, customer_id=customer_id)
+
+    # When/Then
+    with pytest.raises(InvalidParamsError):
+        _ = mdm_query.get(name=name)
+
+
 class SomeResource(Query):
 
     def __init__(self, session, url):
@@ -322,6 +380,16 @@ def customer_id():
 @pytest.fixture
 def device_id():
     return "9c9a7ce5b2fca4658633800bf9cd9d6e"
+
+
+@pytest.fixture
+def mdm_name():
+    return "kaseya"
+
+
+@pytest.fixture
+def org_id():
+    return "987654345678899010101"
 
 
 @pytest.fixture
@@ -351,4 +419,21 @@ def devices(customer_id, device_id):
                     "updated_at": "2020-08-25T04:00:11.143+00:00",
                 }
             ]
+    }
+
+
+@pytest.fixture
+def mdm(customer_id, mdm_name, org_id, url):
+    return {
+        "data":
+            {
+                "customer_id": customer_id,
+                "name": mdm_name,
+                "state": "CREATED",
+                "created_at": "2020-07-25T04:00:11.143+00:00",
+                "updated_at": "2020-08-25T04:00:11.143+00:00",
+                "identifier": org_id,
+                "server_url": url,
+                "enroll_url": f"{url}/enroll"
+            }
     }
