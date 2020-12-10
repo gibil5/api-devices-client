@@ -232,7 +232,7 @@ class MDMState(str, Enum):
     FAILED = "FAILED"
 
 
-class MDMResponseSchema(Schema):  # pylint: disable=too-few-public-methods
+class MDMSchema(Schema):  # pylint: disable=too-few-public-methods
 
     customer_id = fields.UUID(required=True)
     name = fields.Str(required=True, validate=validate.OneOf(list(MDMName)))
@@ -244,13 +244,13 @@ class MDMResponseSchema(Schema):  # pylint: disable=too-few-public-methods
     enroll_url = fields.Str()
 
     @post_load
-    def create_new_mdm_response(self, data, **_):  # pylint: disable=no-self-use
-        return MDMResponse(**data)
+    def create_mdm(self, data, **_):  # pylint: disable=no-self-use
+        return MDM(**data)
 
 
 @dataclass
-class MDMResponse(Serializable):  # pylint: disable=too-many-instance-attributes
-    serializer = MDMResponseSchema()
+class MDM(Serializable):  # pylint: disable=too-many-instance-attributes
+    serializer = MDMSchema()
     customer_id: str
     name: str
     state: str
