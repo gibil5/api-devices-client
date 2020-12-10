@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 
 from devices.schemas import Serializable
-from marshmallow import EXCLUDE, Schema, fields, post_load
+from marshmallow import EXCLUDE, Schema, fields, post_load, validate
 
 
 class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
@@ -218,3 +219,43 @@ class CreateAssignmentPayload(Serializable):
     serializer = CreateAssignmentPayloadSchema()
     assigned_to: str
     assigned_by: str
+
+
+class MDMName(str, Enum):
+    JAMF = "jamf"
+    KASEYA = "kaseya"
+
+
+class MDMState(str, Enum):
+    PENDING = "PENDING"
+    CREATED = "CREATED"
+    FAILED = "FAILED"
+
+
+class MDMSchema(Schema):  # pylint: disable=too-few-public-methods
+
+    customer_id = fields.UUID(required=True)
+    name = fields.Str(required=True, validate=validate.OneOf(list(MDMName)))
+    state = fields.Str(required=True, validate=validate.OneOf(list(MDMState)))
+    created_at = fields.DateTime(required=True)
+    updated_at = fields.DateTime(required=True)
+    identifier = fields.Str()
+    server_url = fields.Str()
+    enroll_url = fields.Str()
+
+    @post_load
+    def create_mdm(self, data, **_):  # pylint: disable=no-self-use
+        return MDM(**data)
+
+
+@dataclass
+class MDM(Serializable):  # pylint: disable=too-many-instance-attributes
+    serializer = MDMSchema()
+    customer_id: str
+    name: str
+    state: str
+    created_at: datetime
+    updated_at: datetime
+    identifier: str = None
+    server_url: str = None
+    enroll_url: str = None
