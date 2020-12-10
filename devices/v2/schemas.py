@@ -122,6 +122,15 @@ class CreateAssignmentPayloadSchema(Schema):  # pylint: disable=too-few-public-m
         return CreateAssignmentPayload(**data)
 
 
+class CreateMDMPayloadSchema(Schema):  # pylint: disable=too-few-public-methods
+    customer_id = fields.Str(required=True, allow_none=False)
+    name = fields.Str(required=True, allow_none=False)
+
+    @post_load
+    def create_payload(self, data, **_):  # pylint: disable=no-self-use
+        return CreateMDMPayloadSchema(**data)
+
+
 @dataclass
 class Device(Serializable):
     serializer = DeviceSchema()
@@ -221,6 +230,13 @@ class CreateAssignmentPayload(Serializable):
     assigned_by: str
 
 
+@dataclass
+class CreateMDMPayload(Serializable):
+    serializer = CreateMDMPayloadSchema()
+    customer_id: str
+    name: str
+
+
 class MDMName(str, Enum):
     JAMF = "jamf"
     KASEYA = "kaseya"
@@ -239,9 +255,9 @@ class MDMSchema(Schema):  # pylint: disable=too-few-public-methods
     state = fields.Str(required=True, validate=validate.OneOf(list(MDMState)))
     created_at = fields.DateTime(required=True)
     updated_at = fields.DateTime(required=True)
-    identifier = fields.Str()
-    server_url = fields.Str()
-    enroll_url = fields.Str()
+    identifier = fields.Str(allow_none=True)
+    server_url = fields.Str(allow_none=True)
+    enroll_url = fields.Str(allow_none=True)
 
     @post_load
     def create_mdm(self, data, **_):  # pylint: disable=no-self-use
