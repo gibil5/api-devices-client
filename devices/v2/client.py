@@ -1,7 +1,6 @@
 from devices.auth import Auth0Bearer
 from devices.errors import InvalidParamsError
 from devices.v2.query import MDM, Device, Devices
-from devices.v2.schemas import MDMName
 from requests import Session
 
 
