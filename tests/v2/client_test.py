@@ -1,7 +1,7 @@
 import pytest
 from devices.errors import InvalidParamsError, InvalidTokenError
 from devices.v2.client import DevicesV2API
-from devices.v2.query import Device, Devices, Query
+from devices.v2.query import MDM, Device, Devices, Query
 from requests import Session
 
 
@@ -70,6 +70,40 @@ def test_device_missing_customer_id(url, auth_token):
         # When/Then
         with pytest.raises(InvalidParamsError):
             _ = devices.device(customer_id=customer_id, device_id=device_id)
+
+
+# Scenarios for MDM:
+# Scenario 01: Create MDM Query
+# Scenario 02: Create MDM Query Invalid params
+# Scenario 03: Create MDM Invalid MDM name
+def test_mdm(url, auth_token, customer_id):
+    # Given
+    mdm_name = "kaseya"
+    with DevicesV2API(url, auth_token) as devices:
+        # When
+        customer_mdm = devices.mdm(customer_id=customer_id)
+
+        # Then
+    assert isinstance(customer_mdm, MDM)
+    assert customer_mdm._session == devices._session
+    assert customer_mdm._url == devices._url
+
+    assert customer_mdm.customer_id == customer_id
+
+
+def test_mdm_missing_customer_id(url, auth_token):
+    # Given
+    customer_id = None
+
+    with DevicesV2API(url, auth_token) as devices:
+        # When/Then
+        with pytest.raises(InvalidParamsError):
+            _ = devices.mdm(customer_id=customer_id)
+
+
+@pytest.fixture
+def customer_id():
+    return "9a919a42-b506-49ee-b053-402827b761b7"
 
 
 @pytest.fixture

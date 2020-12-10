@@ -259,3 +259,17 @@ class MDM(Serializable):  # pylint: disable=too-many-instance-attributes
     identifier: str = None
     server_url: str = None
     enroll_url: str = None
+
+
+class MDMResponseSchema(Schema):  # pylint: disable=too-few-public-methods
+    data = fields.Nested(MDMSchema, required=True, allow_none=False)
+
+    @post_load
+    def create_response(self, data, **_):  # pylint: disable=no-self-use
+        return MDMResponse(**data)
+
+
+@dataclass
+class MDMResponse(Serializable):
+    serializer = MDMResponseSchema()
+    data: MDM

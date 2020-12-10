@@ -1,10 +1,13 @@
 from enum import Enum
 
+from devices.errors import InvalidParamsError
 from devices.v2.errors import APIDevicesV2Error
 from devices.v2.schemas import (
     AssignmentResponse,
     CreateAssignmentPayload,
     DevicesResponse,
+    MDMName,
+    MDMResponse,
 )
 from requests import HTTPError
 
@@ -126,7 +129,12 @@ class Device(Query):
 
 class MDM(Query):
 
-    def __init__(self, session, url, customer_id, name):
+    def __init__(self, session, url, customer_id):
         super().__init__(session, url)
         self.customer_id = customer_id
-        self.name = name
+
+    def get(self, name):
+        if name not in list(MDMName):
+            raise InvalidParamsError(f"MDM name should be one of {list(MDMName)}")
+        resource = DevicesV2Endpoints.customer_mdm.format(name=name, customer_id=self.customer_id)
+        return self.execute_request(resource=resource, method="GET", schema=MDMResponse)

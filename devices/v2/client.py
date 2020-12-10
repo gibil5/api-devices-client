@@ -1,6 +1,6 @@
 from devices.auth import Auth0Bearer
 from devices.errors import InvalidParamsError
-from devices.v2.query import Device, Devices
+from devices.v2.query import MDM, Device, Devices
 from requests import Session
 
 
@@ -38,3 +38,9 @@ class DevicesV2API:
             raise InvalidParamsError("Both customer_id and device_id are needed to query API-Devices")
 
         return Device(session=self._session, url=self._url, customer_id=customer_id, device_id=device_id)
+
+    def mdm(self, customer_id):
+        if not customer_id:
+            raise InvalidParamsError("customer_id is needed to query API-devices")
+
+        return MDM(session=self._session, url=self._url, customer_id=customer_id)
