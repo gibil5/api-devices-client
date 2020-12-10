@@ -1,24 +1,6 @@
-import os
-from datetime import datetime
-from distutils import util
-
 import setuptools
 
-CI = bool(util.strtobool(os.getenv("CI", "False")))
-CIRCLE_BUILD_NUM = os.getenv("CIRCLE_BUILD_NUM")
-CIRCLE_TAG = os.getenv("CIRCLE_TAG")
-
-if CI and CIRCLE_TAG:
-    version = CIRCLE_TAG
-elif CI:
-    # Its assumed that when running in CI the branch is master
-    now = datetime.now()
-    timestamp = now.strftime("%Y%m%d.%H%M")
-    version = f"master.{timestamp}"
-else:
-    version = "0.0.0"
-
-__version__ = version
+__version__ = open(".version").read()
 
 with open('README.md') as f:
     long_description = f.read()

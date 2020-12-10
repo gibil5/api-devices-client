@@ -117,7 +117,14 @@ clean-build:
 	@rm -f *.spec
 	@rm -rf *.egg-info
 
-build: clean-build
+version:
+	@echo "Creating version file..."
+	@( \
+		. $(VENV)/bin/activate; \
+		python3 bin/version.py; \
+	)
+
+build: version clean-build
 	@echo "Building package"
 	@( \
 		. $(VENV)/bin/activate; \

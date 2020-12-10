@@ -1,1 +1,1 @@
-include README requirements.txt
+include README requirements.txt .version
