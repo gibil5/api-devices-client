@@ -14,6 +14,10 @@ class DevicesV2Endpoints(str, Enum):
     device = "/v2/devices/%s"
     device_assignment = "/v2/devices/%s/assignment"
 
+    # MDM
+    customer_mdm = "/v2/mdm/{name}/{customer_id}"
+    mdm = "/v2/mdm"
+
 
 class FilterByOperator(str, Enum):
     AND = "and"
@@ -118,3 +122,11 @@ class Device(Query):
 
     def assignment(self) -> DeviceAssignment:
         return DeviceAssignment(session=self._session, url=self._url, host_identifier=self._host_identifier())
+
+
+class MDM(Query):
+
+    def __init__(self, session, url, customer_id, name):
+        super().__init__(session, url)
+        self.customer_id = customer_id
+        self.name = name
