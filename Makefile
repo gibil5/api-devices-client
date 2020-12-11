@@ -128,7 +128,7 @@ version:
 		python3 bin/version.py; \
 	)
 
-build: version clean-build
+build: clean-build version
 	@echo "Building package"
 	@( \
 		. $(VENV)/bin/activate; \
@@ -144,6 +144,7 @@ publish-ci: version
 	)
 
 publish-local: build
+	@echo ""
 	@echo "You're running in your local machine. You should not publish from here..."
 	@echo "Just a build was run..."
 
