@@ -119,6 +119,7 @@ clean-build:
 	@rm -rf build
 	@rm -f *.spec
 	@rm -rf *.egg-info
+	@rm -f .version
 
 version:
 	@echo "Creating version file..."
@@ -127,14 +128,14 @@ version:
 		python3 bin/version.py; \
 	)
 
-build: version clean-build
+build: clean-build version
 	@echo "Building package"
 	@( \
 		. $(VENV)/bin/activate; \
 		python3 setup.py sdist; \
 	)
 
-publish-ci:
+publish-ci: version
 	@echo "Building and publishing package"
 	@( \
 		. $(VENV)/bin/activate; \
@@ -143,6 +144,7 @@ publish-ci:
 	)
 
 publish-local: build
+	@echo ""
 	@echo "You're running in your local machine. You should not publish from here..."
 	@echo "Just a build was run..."
 
