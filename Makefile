@@ -9,6 +9,7 @@ clean-pyc \
 clean-test \
 test \
 coverage \
+version \
 build \
 publish
 
@@ -51,6 +52,8 @@ help:
 	@echo "        Run pytest."
 	@echo "    coverage"
 	@echo "        Generate coverage report."
+	@echo "    version"
+	@echo "        Generate version file."
 	@echo "    build"
 	@echo "        Create artifact."
 	@echo "    publish"
