@@ -119,6 +119,7 @@ clean-build:
 	@rm -rf build
 	@rm -f *.spec
 	@rm -rf *.egg-info
+	@rm -f .version
 
 version:
 	@echo "Creating version file..."
@@ -134,7 +135,7 @@ build: version clean-build
 		python3 setup.py sdist; \
 	)
 
-publish-ci:
+publish-ci: version
 	@echo "Building and publishing package"
 	@( \
 		. $(VENV)/bin/activate; \
