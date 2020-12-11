@@ -1,6 +1,6 @@
 # api-devices-client
 
-[![Version](https://img.shields.io/badge/version-0.0.2-blue)](https://img.shields.io/badge/version-0.0.2-blue)
+[![Version](https://img.shields.io/badge/version-0.0.3-blue)](https://img.shields.io/badge/version-0.0.3-blue)
 [![CircleCI](https://circleci.com/gh/ElectricAI/api-devices-client.svg?style=svg&circle-token=6b1b7d4e6fe9e1758e8c1f10f6170ddf66341176)](https://circleci.com/gh/ElectricAI/api-devices-client)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9ed5d6f56b4db526ecbb/maintainability)](https://codeclimate.com/repos/5f5a99eb03b2c5018b011671/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/9ed5d6f56b4db526ecbb/test_coverage)](https://codeclimate.com/repos/5f5a99eb03b2c5018b011671/test_coverage)
@@ -14,7 +14,7 @@ This client is meant to be used to query `api-devices` REST endpoints.
 
 Add this to you python requirements:
 
-    api-devices-client==0.0.1
+    api-devices-client==0.0.3
 
 
 This package is stored in Gemfury. You'll need to add the gemfury index to

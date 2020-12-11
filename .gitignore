@@ -413,3 +413,7 @@ allure/*
 
 # Idea
 .idea
+
+
+# Packaging
+.version
