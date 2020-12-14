@@ -414,8 +414,9 @@ def test_create_mdm_incorrect_mdm_name(url, customer_id):
 
 
 # Scenarios for DownloadLink
-# Scenario 01: DownloadLink create Query
-# Scenario 02: Get DownloadLink success
+# Scenario 01: Query Creation
+# Scenario 02: Success (Non null values)
+# Scenario 03: Null Values
 def test_download_link_query(customer_id, url):
     # Given
     session = Session()
@@ -456,6 +457,31 @@ def test_get_download_link_success(customer_id, url, download_links):
 
     assert response.data.jamf == download_links["data"]["jamf"]
     assert response.data.kaseya == download_links["data"]["kaseya"]
+
+
+@responses.activate
+def test_get_download_link_null_values(customer_id, url, null_download_links):
+    # Given
+    session = Session()
+
+    expected_endpoint = f"/v2/download-link/{customer_id}"
+    expected_url = f"{url}{expected_endpoint}"
+    responses.add_callback(
+        responses.GET,
+        expected_url,
+        callback=http_200_callback(body=null_download_links, request_headers=_APP_JSON),
+    )
+
+    # When
+    download_link_query = DownloadLink(session=session, url=url, customer_id=customer_id)
+    response = download_link_query.get()
+
+    # Then
+    assert download_link_query.url == url
+    assert download_link_query.customer_id == customer_id
+
+    assert response.data.jamf is None
+    assert response.data.kaseya is None
 
 
 class SomeResource(Query):  # pylint: disable=too-few-public-methods
@@ -548,5 +574,15 @@ def get_download_links():
         "data": {
             "jamf": "jamf_url",
             "kaseya": "kaseya_url",
+        },
+    }
+
+
+@pytest.fixture(name="null_download_links")
+def get_null_download_links():
+    return {
+        "data": {
+            "jamf": None,
+            "kaseya": None,
         },
     }

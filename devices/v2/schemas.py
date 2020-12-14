@@ -290,8 +290,8 @@ class MDMResponse(Serializable):
 
 
 class DownloadLinkSchema(Schema):  # pylint: disable=too-few-public-methods
-    jamf = fields.Str()
-    kaseya = fields.Str()
+    jamf = fields.Str(required=True, allow_none=True)
+    kaseya = fields.Str(required=True, allow_none=True)
 
     @post_load
     def create_download_link(self, data, **_):  # pylint: disable=no-self-use
