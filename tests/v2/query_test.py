@@ -544,6 +544,7 @@ def get_devices(customer_id, device_id):
                     "traceable": True,
                     "hostname": "one-device",
                     "healthy": False,
+                    "state": "NON_REPORTING",
                     "created_at": "2020-07-25T04:00:11.143+00:00",
                     "updated_at": "2020-08-25T04:00:11.143+00:00",
                 }

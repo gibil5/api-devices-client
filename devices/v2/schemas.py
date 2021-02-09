@@ -6,6 +6,12 @@ from devices.schemas import Serializable
 from marshmallow import EXCLUDE, Schema, fields, post_load, validate
 
 
+class DeviceState(str, Enum):
+    HEALTHY = "HEALTHY"
+    UNHEALTHY = "UNHEALTHY"
+    NON_REPORTING = "NON_REPORTING"
+
+
 class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
 
     class Meta:  # pylint: disable=too-few-public-methods
@@ -59,6 +65,7 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     # Computed attributes
     healthy = fields.Boolean(required=True, allow_none=False)
     assigned = fields.Boolean(required=False, allow_none=False)
+    state = fields.Str(required=True, allow_none=False, validate=validate.OneOf(list(DeviceState)))
 
     @post_load
     def create_device(self, data, **_):  # pylint: disable=no-self-use
@@ -182,6 +189,7 @@ class Device(Serializable):
     # Computed attributes
     healthy: bool = None
     assigned: bool = None
+    state: str = None
 
 
 @dataclass
