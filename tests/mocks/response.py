@@ -54,6 +54,7 @@ def _http_callback(status_code, headers=None, body=None, request_body=None, requ
 
 http_200_callback = functools.partial(_http_callback, status_code=HTTPStatus.OK)
 http_201_callback = functools.partial(_http_callback, status_code=HTTPStatus.CREATED)
+http_202_callback = functools.partial(_http_callback, status_code=HTTPStatus.ACCEPTED)
 http_204_callback = functools.partial(_http_callback, status_code=HTTPStatus.NO_CONTENT)
 http_400_callback = functools.partial(_http_callback, status_code=HTTPStatus.BAD_REQUEST)
 http_401_callback = functools.partial(_http_callback, status_code=HTTPStatus.UNAUTHORIZED)

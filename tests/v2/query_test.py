@@ -7,6 +7,7 @@ from devices.errors import InvalidParamsError
 from devices.v2.errors import APIDevicesV2Error
 from devices.v2.query import (
     MDM,
+    Assignment,
     Device,
     DeviceAssignment,
     Devices,
@@ -19,6 +20,7 @@ from devices.v2.schemas import DevicesResponse
 from requests import Session
 from tests.mocks.response import (
     http_200_callback,
+    http_202_callback,
     http_204_callback,
     http_400_callback,
 )
@@ -448,7 +450,11 @@ def test_get_download_link_success(customer_id, url, download_links):
     )
 
     # When
-    download_link_query = DownloadLink(session=session, url=url, customer_id=customer_id)
+    download_link_query = DownloadLink(
+        session=session,
+        url=url,
+        customer_id=customer_id,
+    )
     response = download_link_query.get()
 
     # Then
@@ -473,7 +479,11 @@ def test_get_download_link_null_values(customer_id, url, null_download_links):
     )
 
     # When
-    download_link_query = DownloadLink(session=session, url=url, customer_id=customer_id)
+    download_link_query = DownloadLink(
+        session=session,
+        url=url,
+        customer_id=customer_id,
+    )
     response = download_link_query.get()
 
     # Then
@@ -482,6 +492,100 @@ def test_get_download_link_null_values(customer_id, url, null_download_links):
 
     assert response.data.jamf is None
     assert response.data.kaseya is None
+
+
+# Scenarios for Assignment
+# Scenario 01: Query Creation
+# Scenario 02: Success (Non null values)
+# Scenario 03: Null Values
+def test_assignment_query(customer_id, url, employee_ids):
+    # Given
+    session = Session()
+
+    # When
+    download_link_query = Assignment(
+        session=session,
+        url=url,
+        customer_id=customer_id,
+        employee_ids=employee_ids,
+    )
+
+    # Then
+    assert download_link_query.session == session
+    assert download_link_query.url == url
+    assert download_link_query.customer_id == customer_id
+    assert download_link_query.employee_ids == employee_ids
+
+
+@responses.activate
+def test_request_assignments_success(customer_id, url, employee_ids):
+    # Given
+    session = Session()
+
+    expected_endpoint = "/v2/assignments/request"
+    expected_url = f"{url}{expected_endpoint}"
+    responses.add_callback(
+        responses.POST,
+        expected_url,
+        callback=http_202_callback(),
+    )
+
+    # When
+    assignments_query = Assignment(
+        session=session,
+        url=url,
+        customer_id=customer_id,
+        employee_ids=employee_ids,
+    )
+    assignments_query.request()
+
+    # Then
+    assert assignments_query.url == url
+    assert assignments_query.customer_id == customer_id
+    assert assignments_query.employee_ids == employee_ids
+
+
+@responses.activate
+def test_request_assignments_failed(customer_id, url):
+    # Given
+    session = Session()
+    employee_ids = None
+
+    code = "some_code_from_api"
+    detail = "exploded"
+    source = {"extra": "detail", "api_devices_went": "boom boom"}
+
+    error_response = dict(code=code, detail=detail, source=source)
+
+    expected_endpoint = "/v2/assignments/request"
+    expected_url = f"{url}{expected_endpoint}"
+    responses.add_callback(
+        responses.POST, expected_url, callback=http_400_callback(
+            body=error_response,
+            request_headers=_APP_JSON,
+        )
+    )
+    # When
+    assignments_query = Assignment(
+        session=session,
+        url=url,
+        customer_id=customer_id,
+        employee_ids=employee_ids,
+    )
+    with pytest.raises(APIDevicesV2Error) as err_info:
+        _ = assignments_query.request()
+
+    # Then
+    assert assignments_query.url == url
+    assert assignments_query.customer_id == customer_id
+    assert assignments_query.employee_ids == employee_ids
+
+    err = err_info.value
+    assert err.status_code == HTTPStatus.BAD_REQUEST
+    assert err.code == code
+    assert err.detail == detail
+    assert err.source == source
+    assert str(err) == f"({code}) {detail}"
 
 
 class SomeResource(Query):  # pylint: disable=too-few-public-methods
@@ -519,6 +623,14 @@ def get_mdm_name():
 @pytest.fixture(name="org_id")
 def get_org_id():
     return "987654345678899010101"
+
+
+@pytest.fixture(name="employee_ids")
+def get_employee_ids():
+    return [
+        "25938eac-f148-45a0-bf5b-620b373c59e1",
+        "8a46f176-7db2-403d-bf40-ea91146f8e76",
+    ]
 
 
 @pytest.fixture(name="devices")

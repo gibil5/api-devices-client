@@ -1,7 +1,6 @@
 .PHONY: init \
 init-venv \
 update-venv \
-build \
 clean \
 clean-build \
 clean-venv \
@@ -36,8 +35,6 @@ help:
 	@echo "        Initialize development environment."
 	@echo "    init-venv"
 	@echo "        Initialize python environment."
-	@echo "    build"
-	@echo "        Builds this package."
 	@echo "    clean"
 	@echo "        Remove all the development environment files."
 	@echo "    clean-build"

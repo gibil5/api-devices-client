@@ -1,6 +1,6 @@
 from devices.auth import Auth0Bearer
 from devices.errors import InvalidParamsError
-from devices.v2.query import MDM, Device, Devices, DownloadLink
+from devices.v2.query import MDM, Assignment, Device, Devices, DownloadLink
 from requests import Session
 
 
@@ -69,4 +69,15 @@ class DevicesV2API:
             session=self._session,
             url=self._url,
             customer_id=customer_id,
+        )
+
+    def assignments(self, customer_id, employee_ids):
+        if not (customer_id and employee_ids):
+            raise InvalidParamsError("Both customer_id and employee_ids are needed to query API-Devices")
+
+        return Assignment(
+            session=self._session,
+            url=self._url,
+            customer_id=customer_id,
+            employee_ids=employee_ids,
         )

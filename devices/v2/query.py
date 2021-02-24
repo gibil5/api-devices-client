@@ -4,6 +4,7 @@ from devices.errors import InvalidParamsError
 from devices.v2.errors import APIDevicesV2Error
 from devices.v2.schemas import (
     AssignmentResponse,
+    AssignmentsRequestPayload,
     CreateAssignmentPayload,
     CreateMDMPayload,
     DevicesResponse,
@@ -22,6 +23,8 @@ class DevicesV2Endpoint(str, Enum):
     MDM = "/v2/mdm"
     CUSTOMER_MDM = "/v2/mdm/{name}/{customer_id}"
     DOWNLOAD_LINK = "/v2/download-link/{customer_id}"
+    # Assignments
+    ASSIGNMENTS_REQUEST = "/v2/assignments/request"
 
 
 class FilterByOperator(str, Enum):
@@ -114,8 +117,8 @@ class Devices(Query):
 class DeviceAssignment(Query):
 
     def __init__(self, session, url, host_identifier):
-        self.host_identifier = host_identifier
         super().__init__(session, url)
+        self.host_identifier = host_identifier
 
     def get(self):
         resource = DevicesV2Endpoint.DEVICE_ASSIGNMENT.format(id=self.host_identifier)
@@ -149,8 +152,8 @@ class Device(Query):
 
     def __init__(self, session, url, customer_id, device_id):
         super().__init__(session, url)
-        self.customer_id = customer_id
         self.device_id = device_id
+        self.customer_id = customer_id
 
     def _host_identifier(self):
         return f"{self.customer_id}::{self.device_id}"
@@ -172,6 +175,7 @@ class MDM(Query):
     def get(self, name):
         if name not in list(MDMName):
             raise InvalidParamsError(f"MDM name should be one of {list(MDMName)}")
+
         resource = DevicesV2Endpoint.CUSTOMER_MDM.format(
             name=name,
             customer_id=self.customer_id,
@@ -185,6 +189,7 @@ class MDM(Query):
     def create(self, name):
         if name not in list(MDMName):
             raise InvalidParamsError(f"MDM name should be one of {list(MDMName)}")
+
         create_mdm_payload = CreateMDMPayload(customer_id=self.customer_id, name=name)
         return self.execute_request(
             resource=DevicesV2Endpoint.MDM,
@@ -206,4 +211,24 @@ class DownloadLink(Query):
             resource=resource,
             method="GET",
             schema=DownloadLinkResponse,
+        )
+
+
+class Assignment(Query):
+
+    def __init__(self, session, url, customer_id, employee_ids):
+        super().__init__(session, url)
+        self.customer_id = customer_id
+        self.employee_ids = employee_ids
+
+    def request(self):
+        request = AssignmentsRequestPayload(
+            customer_id=self.customer_id,
+            employee_ids=self.employee_ids,
+        )
+        resource = DevicesV2Endpoint.ASSIGNMENTS_REQUEST
+        return self.execute_request(
+            resource=resource,
+            method="POST",
+            payload=request.dump(),
         )

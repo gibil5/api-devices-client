@@ -1,7 +1,14 @@
 import pytest
 from devices.errors import InvalidParamsError, InvalidTokenError
 from devices.v2.client import DevicesV2API
-from devices.v2.query import MDM, Device, Devices, DownloadLink, Query
+from devices.v2.query import (
+    MDM,
+    Assignment,
+    Device,
+    Devices,
+    DownloadLink,
+    Query,
+)
 from requests import Session
 
 
@@ -125,9 +132,50 @@ def test_download_link_missing_customer_id(url, auth_token):
             _ = devices.download_link(customer_id=customer_id)
 
 
+# Scenarios for Assignment
+# Scenario 01: Create Assignment query
+# Scenario 02: Invalid params
+def test_assignment(url, auth_token, customer_id, employee_ids):
+    # Given
+    with DevicesV2API(url, auth_token) as devices:
+        # When
+        assignment = devices.assignments(
+            customer_id=customer_id,
+            employee_ids=employee_ids,
+        )
+
+    # Then
+    assert isinstance(assignment, Assignment)
+    assert assignment.session == devices.session
+    assert assignment.url == devices.url
+    assert assignment.customer_id == customer_id
+    assert assignment.employee_ids == employee_ids
+
+
+def test_assignment_missing_employee_ids(url, auth_token, customer_id):
+    # Given
+    employee_ids = None
+
+    with DevicesV2API(url, auth_token) as devices:
+        # When/Then
+        with pytest.raises(InvalidParamsError):
+            _ = devices.assignments(
+                customer_id=customer_id,
+                employee_ids=employee_ids,
+            )
+
+
 @pytest.fixture(name="customer_id")
 def get_customer_id():
     return "9a919a42-b506-49ee-b053-402827b761b7"
+
+
+@pytest.fixture(name="employee_ids")
+def get_employee_ids():
+    return [
+        "25938eac-f148-45a0-bf5b-620b373c59e1",
+        "8a46f176-7db2-403d-bf40-ea91146f8e76",
+    ]
 
 
 @pytest.fixture(name="url")

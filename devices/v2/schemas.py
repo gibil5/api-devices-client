@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import List
 
 from devices.schemas import Serializable
 from marshmallow import EXCLUDE, Schema, fields, post_load, validate
@@ -139,7 +140,7 @@ class CreateMDMPayloadSchema(Schema):  # pylint: disable=too-few-public-methods
 
 
 @dataclass
-class Device(Serializable):
+class Device(Serializable):  # pylint: disable=too-many-instance-attributes
     serializer = DeviceSchema()
     # Ids
     customer_id: str
@@ -325,3 +326,19 @@ class DownloadLinkResponseSchema(Schema):  # pylint: disable=too-few-public-meth
 class DownloadLinkResponse(Serializable):
     serializer = DownloadLinkResponseSchema()
     data: DownloadLink
+
+
+class AssignmentsRequestPayloadSchema(Schema):  # pylint: disable=too-few-public-methods
+    customer_id = fields.Str(required=True, allow_none=False)
+    employee_ids = fields.List(fields.Str(), required=True, allow_none=False)
+
+    @post_load
+    def create_payload(self, data, **_):  # pylint: disable=no-self-use
+        return AssignmentsRequestPayload(**data)
+
+
+@dataclass
+class AssignmentsRequestPayload(Serializable):
+    serializer = AssignmentsRequestPayloadSchema()
+    customer_id: str
+    employee_ids: List[str]
