@@ -13,6 +13,15 @@ class DeviceState(str, Enum):
     NON_REPORTING = "NON_REPORTING"
 
 
+class DeviceLockStatus(str, Enum):
+    UNLOCKED = "UNLOCKED"
+    PENDING_LOCK = "PENDING_LOCK"
+    PENDING_UNLOCK = "PENDING_UNLOCK"
+    FAILED = "FAILED"
+    LOCKED = "LOCKED"
+    UNKNOWN = "UNKNOWN"
+
+
 class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
 
     class Meta:  # pylint: disable=too-few-public-methods
@@ -56,6 +65,13 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     filevault = fields.Boolean(required=False, allow_none=True)
     filevault_encryption_percent = fields.Float(required=False, allow_none=True)
     gatekeeper = fields.Boolean(required=False, allow_none=True)
+    lock_status = fields.Str(
+        required=False,
+        allow_none=False,
+        validate=validate.OneOf(list(DeviceLockStatus)),
+        missing=DeviceLockStatus.UNKNOWN
+    )
+
     # Activity
     username = fields.Str(required=False, allow_none=True)
     last_active = fields.DateTime(required=False, allow_none=True)
@@ -180,6 +196,7 @@ class Device(Serializable):  # pylint: disable=too-many-instance-attributes
     filevault: bool = None
     filevault_encryption_percent: float = None
     gatekeeper: bool = None
+    lock_status: str = None
     # Activity
     username: str = None
     last_active: datetime = None
