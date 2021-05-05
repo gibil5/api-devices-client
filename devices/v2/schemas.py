@@ -14,11 +14,12 @@ class DeviceState(str, Enum):
 
 
 class DeviceLockStatus(str, Enum):
+    LOCKED = "LOCKED"
     UNLOCKED = "UNLOCKED"
     PENDING_LOCK = "PENDING_LOCK"
     PENDING_UNLOCK = "PENDING_UNLOCK"
-    FAILED = "FAILED"
-    LOCKED = "LOCKED"
+    FAILED_LOCK = "FAILED_LOCK"
+    FAILED_UNLOCK = "FAILED_UNLOCK"
     UNKNOWN = "UNKNOWN"
 
 
