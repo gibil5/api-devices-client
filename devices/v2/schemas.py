@@ -69,7 +69,7 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
         required=False,
         allow_none=False,
         validate=validate.OneOf(list(DeviceLockStatus)),
-        missing=DeviceLockStatus.UNKNOWN
+        missing=DeviceLockStatus.UNKNOWN.value
     )
 
     # Activity
