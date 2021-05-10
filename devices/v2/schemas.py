@@ -4,7 +4,15 @@ from enum import Enum
 from typing import List
 
 from devices.schemas import Serializable
-from marshmallow import EXCLUDE, Schema, fields, post_load, validate
+from marshmallow import (
+    EXCLUDE,
+    Schema,
+    fields,
+    missing,
+    post_load,
+    pre_load,
+    validate,
+)
 
 
 class DeviceState(str, Enum):
@@ -68,9 +76,9 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     gatekeeper = fields.Boolean(required=False, allow_none=True)
     lock_status = fields.Str(
         required=False,
-        allow_none=False,
+        allow_none=True,
         validate=validate.OneOf(list(DeviceLockStatus)),
-        missing=DeviceLockStatus.UNKNOWN.value
+        missing=DeviceLockStatus.UNKNOWN.value,
     )
 
     # Activity
@@ -84,6 +92,39 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     healthy = fields.Boolean(required=True, allow_none=False)
     assigned = fields.Boolean(required=False, allow_none=False)
     state = fields.Str(required=True, allow_none=False, validate=validate.OneOf(list(DeviceState)))
+
+    @pre_load
+    def _lock_status_add_missing_as_replacement_for_none(self, data, **_):
+        """
+        Replaces None values with marshmallow.missing
+
+        The goal of this function is to treat None values the same way
+        as missing. The current version of marshmallow does not offer a default for
+        load.
+        It has a RFC:
+        https://github.com/marshmallow-code/marshmallow/issues/778
+
+        And an open PR:
+        https://github.com/marshmallow-code/marshmallow/pull/1742
+
+        But this apply for 3.12.X versions of the lib, not the one currently used
+
+        This solution was inspired by this comment:
+        https://github.com/marshmallow-code/marshmallow/issues/588#issuecomment-283544372
+
+        Also, in theory there should NOT be any None field coming from the API, that'd
+        mean something worse has happened, but still this schema was left flexible add
+        resilience on the lib
+
+        Because this is added as missing, the value that the lib will return is UNKNOWN
+        """
+        try:
+            lock_status = data["lock_status"]
+            if lock_status is None:
+                data["lock_status"] = missing
+            return data
+        except KeyError:
+            return data
 
     @post_load
     def create_device(self, data, **_):  # pylint: disable=no-self-use
