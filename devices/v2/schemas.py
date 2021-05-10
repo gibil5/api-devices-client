@@ -3,7 +3,6 @@ from datetime import datetime
 from enum import Enum
 from typing import List
 
-from devices.schemas import Serializable
 from marshmallow import (
     EXCLUDE,
     Schema,
@@ -13,6 +12,8 @@ from marshmallow import (
     pre_load,
     validate,
 )
+
+from devices.schemas import Serializable
 
 
 class DeviceState(str, Enum):
