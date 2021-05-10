@@ -605,16 +605,6 @@ def get_auth_token():
     return "aRandomBearerTokenForAuth0Authentication"
 
 
-@pytest.fixture(name="customer_id")
-def get_customer_id():
-    return "9a919a42-b506-49ee-b053-402827b761b7"
-
-
-@pytest.fixture(name="device_id")
-def get_device_id():
-    return "9c9a7ce5b2fca4658633800bf9cd9d6e"
-
-
 @pytest.fixture(name="mdm_name")
 def get_mdm_name():
     return "kaseya"
@@ -657,6 +647,7 @@ def get_devices(customer_id, device_id):
                     "hostname": "one-device",
                     "healthy": False,
                     "state": "NON_REPORTING",
+                    "lock_status": "UNLOCKED",
                     "created_at": "2020-07-25T04:00:11.143+00:00",
                     "updated_at": "2020-08-25T04:00:11.143+00:00",
                 }
