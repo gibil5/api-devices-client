@@ -114,8 +114,7 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
         https://github.com/marshmallow-code/marshmallow/issues/588#issuecomment-283544372
 
         Also, in theory there should NOT be any None field coming from the API, that'd
-        mean something worse has happened, but still this schema was left flexible add
-        resilience on the lib
+        mean something worse has happened, but still this schema was left flexible.
 
         Because this is added as missing, the value that the lib will return is UNKNOWN
         """
