@@ -94,7 +94,7 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     state = fields.Str(required=True, allow_none=False, validate=validate.OneOf(list(DeviceState)))
 
     @pre_load
-    def _lock_status_add_missing_as_replacement_for_none(self, data, **_):
+    def _lock_status_add_missing_as_replacement_for_none(self, data, **_):  # pylint: disable=no-self-use
         """
         Replaces None values with marshmallow.missing
 
