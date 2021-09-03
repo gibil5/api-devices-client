@@ -61,6 +61,7 @@ class DeviceSchema(Schema):  # pylint: disable=too-few-public-methods
     total_ram = fields.Float(required=False, allow_none=True)
     total_hard_drive_space = fields.Float(required=False, allow_none=True)
     free_hard_drive_space = fields.Float(required=False, allow_none=True)
+    processor_type = fields.Str(required=False, allow_none=True)
     # OS
     os_type = fields.Str(required=False, allow_none=True)
     os_name = fields.Str(required=False, allow_none=True)
@@ -224,6 +225,7 @@ class Device(Serializable):  # pylint: disable=too-many-instance-attributes
     total_ram: float = None
     total_hard_drive_space: float = None
     free_hard_drive_space: float = None
+    processor_type: str = None
     # OS
     os_type: str = None
     os_name: str = None
