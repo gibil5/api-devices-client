@@ -1,5 +1,7 @@
 from enum import Enum
 
+from requests import HTTPError
+
 from devices.errors import InvalidParamsError
 from devices.v2.errors import APIDevicesV2Error
 from devices.v2.schemas import (
@@ -12,7 +14,6 @@ from devices.v2.schemas import (
     MDMName,
     MDMResponse,
 )
-from requests import HTTPError
 
 
 class DevicesV2Endpoint(str, Enum):
@@ -76,6 +77,12 @@ class Devices(Query):
     def __init__(self, session, url, customer_id):
         super().__init__(session, url)
         self._query_parameters["customerId"] = customer_id
+
+    #jx
+    def assigned_to(self, user_id):
+        if user_id:
+            self._query_parameters["assigned_to"] = user_id
+        return self
 
     def filter_by(self, **kwargs):
         if kwargs:
