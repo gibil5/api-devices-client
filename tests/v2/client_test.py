@@ -1,4 +1,6 @@
 import pytest
+from requests import Session
+
 from devices.errors import InvalidParamsError, InvalidTokenError
 from devices.v2.client import DevicesV2API
 from devices.v2.query import (
@@ -9,7 +11,6 @@ from devices.v2.query import (
     DownloadLink,
     Query,
 )
-from requests import Session
 
 
 def test_client_session_creation_success(url, auth_token):
@@ -39,6 +40,27 @@ def test_devices(url, auth_token):
     assert customer_devices.session == devices.session
     assert customer_devices.url == devices.url
     assert customer_devices.query_parameters["customerId"] == customer_id
+
+
+#jx
+def test_devices_assigned_to(url, auth_token):
+    # Given
+    customer_id = "224656a5-c95e-4de9-a845-237e9207f348"
+    user_id = "4b74a197-09f6-4347-8ed7-5f8ff5165139"
+
+    with DevicesV2API(url, auth_token) as devices:
+        # When
+        customer_devices = devices.devices(customer_id=customer_id, assigned_to=user_id)
+
+    # Then
+    assert isinstance(customer_devices, Devices)
+    assert customer_devices.session == devices.session
+    assert customer_devices.url == devices.url
+    assert customer_devices.query_parameters["customerId"] == customer_id
+    assert customer_devices.query_parameters["assignedTo"] == user_id
+
+
+#jx
 
 
 def test_devices_missing_customer_id(url, auth_token):
