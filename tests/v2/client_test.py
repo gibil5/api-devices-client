@@ -1,6 +1,8 @@
 import pytest
 from requests import Session
 
+#from proxy_flare.services.auth0 import Auth0Client
+from devices.auth0 import Auth0Client
 from devices.errors import InvalidParamsError, InvalidTokenError
 from devices.v2.client import DevicesV2API
 from devices.v2.query import (
@@ -42,6 +44,16 @@ def test_devices(url, auth_token):
     assert customer_devices.query_parameters["customerId"] == customer_id
 
 
+def test_devices_missing_customer_id(url, auth_token):
+    # Given
+    customer_id = None
+
+    with DevicesV2API(url, auth_token) as devices:
+        # When/Then
+        with pytest.raises(InvalidParamsError):
+            _ = devices.devices(customer_id=customer_id)
+
+
 #jx
 def test_devices_assigned_to(url, auth_token):
     # Given
@@ -61,16 +73,83 @@ def test_devices_assigned_to(url, auth_token):
 
 
 #jx
+#def test_get_devices_by_user_id(auth_token):
+#def test_get_devices_by_user_id(url, auth_token):
+def test_get_devices_by_user_id():
+    """
+    https://devices-staging.electric.ai/staging/v2/devices?
+        customerId=9a919a42-b506-49ee-b053-402827b761b7
+        &
+        assigned_to=cd4b0d93-1012-4821-ad96-458a8e96cb65
 
+    https://devices-staging.electric.ai/staging/v2/devices?
+    customerId=9a919a42-b506-49ee-b053-402827b761b7
+    &
+    assigned_to=5d96c8c1-96b1-410b-9002-b21ff8b71fef
 
-def test_devices_missing_customer_id(url, auth_token):
+    """
+    print('\n\n*** test_get_devices_by_user_id')
+
     # Given
-    customer_id = None
+    url = 'https://devices-staging.electric.ai/staging'
+    print(url)
 
-    with DevicesV2API(url, auth_token) as devices:
-        # When/Then
-        with pytest.raises(InvalidParamsError):
-            _ = devices.devices(customer_id=customer_id)
+    #customer_id = "224656a5-c95e-4de9-a845-237e9207f348"
+    #user_id = "4b74a197-09f6-4347-8ed7-5f8ff5165139"
+    #customer_id = "e45cdc35-e72d-4edb-88bb-4010d3d9fd03"
+    #user_id = "1b940372-8044-4de8-a326-f62fe0952767"
+
+    customer_id = "9a919a42-b506-49ee-b053-402827b761b7"
+    #user_id = "5d96c8c1-96b1-410b-9002-b21ff8b71fef"
+    #user_id = "1e04650f-23be-4a54-b22e-83679d65bde9"
+    user_id = "cd4b0d93-1012-4821-ad96-458a8e96cb65"
+
+    #limit = None
+    #after = None
+    #filters = {}
+    #operator = None
+    #sort = None
+    #sort_by = None
+
+    # Authentication. This instantiation is using
+    # a singleton, thus this is not creating a new object
+    auth_client = Auth0Client()
+
+    #response = DevicesV2API(url, auth_token) \
+    #.devices(customer_id=customer_id, assigned_to=user_id) \
+    response = DevicesV2API(url, auth_client.token) \
+        .devices(customer_id=customer_id) \
+        .assigned_to(user_id=user_id) \
+        .all() \
+        .dump()
+    #.limit(limit=limit) \
+    #.after(after=after) \
+    #.filter_by(**filters) \
+    #.filter_by_operator(operator=operator) \
+    #.order_by(order=sort, order_by=sort_by) \
+
+    print(response)
+    #print(response['data'][0]['customer_id'])
+    #print(response['data'][0]['assigned_to'])
+    #print(response['data'][1]['customer_id'])
+    #print(response['data'][1]['assigned_to'])
+
+    print()
+    for re in response['data']:
+        print(re['customer_id'])
+        print(re['assigned_to'])
+        print()
+
+    #print(response['data'][404]['customer_id'])
+    print(response['total'])
+
+    # The FE is expecting the devices keyword
+    # but we agreed that data is the keyword in the API
+    # for returning data.
+    response["devices"] = response.pop("data")
+    #print(response)
+    #print(response["devices"])
+    return response
 
 
 def test_device(url, auth_token):
