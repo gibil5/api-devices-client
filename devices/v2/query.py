@@ -75,7 +75,6 @@ class Query:  # pylint: disable=too-few-public-methods
 class Devices(Query):
 
     #jx
-    #def __init__(self, session, url, customer_id):
     def __init__(self, session, url, customer_id, assigned_to=None):
         super().__init__(session, url)
         self._query_parameters["customerId"] = customer_id
