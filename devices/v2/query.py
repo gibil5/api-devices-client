@@ -75,10 +75,11 @@ class Query:  # pylint: disable=too-few-public-methods
 class Devices(Query):
 
     #jx
-    def __init__(self, session, url, customer_id, assigned_to=None):
+    #def __init__(self, session, url, customer_id, assigned_to=None):
+    def __init__(self, session, url, customer_id):
         super().__init__(session, url)
         self._query_parameters["customerId"] = customer_id
-        self._query_parameters["assignedTo"] = assigned_to
+        #self._query_parameters["assignedTo"] = assigned_to
 
     #jx
     def assigned_to(self, user_id):

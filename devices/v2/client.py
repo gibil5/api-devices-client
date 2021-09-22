@@ -32,7 +32,8 @@ class DevicesV2API:
         self._session.close()
 
     # jx
-    def devices(self, customer_id, assigned_to=None) -> Devices:
+    #def devices(self, customer_id, assigned_to=None) -> Devices:
+    def devices(self, customer_id) -> Devices:
         if not customer_id:
             raise InvalidParamsError("customer_id is needed to query API-devices")
 
@@ -40,7 +41,7 @@ class DevicesV2API:
             session=self._session,
             url=self._url,
             customer_id=customer_id,
-            assigned_to=assigned_to,
+            #assigned_to=assigned_to,
         )
 
     def device(self, customer_id, device_id):
