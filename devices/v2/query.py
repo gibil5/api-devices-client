@@ -84,7 +84,8 @@ class Devices(Query):
     #jx
     def assigned_to(self, user_id):
         if user_id:
-            self._query_parameters["assigned_to"] = user_id
+            #self._query_parameters["assigned_to"] = user_id
+            self._query_parameters["assignedTo"] = user_id
         return self
 
     def filter_by(self, **kwargs):
